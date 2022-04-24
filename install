@@ -1,0 +1,4 @@
+#!/usr/bin/sh
+
+cp ./out/artifacts/Clean2048_jar/Clean2048.jar ~/Documents/Projects
+

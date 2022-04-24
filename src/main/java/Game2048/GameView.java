@@ -1,5 +1,6 @@
 package Game2048;
 
+import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
@@ -31,8 +32,12 @@ public class GameView {
     public void updateDisplay() {
         try {
             terminal.setCursorPosition(0, 0);
-            terminal.putString("      Score: " + grid.getScore());
+            terminal.setForegroundColor(TextColor.ANSI.BLACK_BRIGHT);
+            terminal.putString("      Score: ");
+            terminal.setForegroundColor(TextColor.ANSI.CYAN);
+            terminal.putString(String.valueOf(grid.getScore()));
             terminal.putCharacter('\n');
+            terminal.setForegroundColor(TextColor.ANSI.BLACK_BRIGHT);
             terminal.putString(" -------------------");
             terminal.putCharacter('\n');
             for (Tile[] row : grid.grid) {
@@ -41,7 +46,9 @@ public class GameView {
                     if (tile.isEmpty()) {
                         terminal.putString("    ");
                     } else {
+                        terminal.setForegroundColor(TextColor.ANSI.CYAN);
                         terminal.putString(String.format("%4s", tile.getValue()));
+                        terminal.setForegroundColor(TextColor.ANSI.BLACK_BRIGHT);
                     }
                     terminal.putCharacter('|');
                 }
@@ -50,7 +57,9 @@ public class GameView {
                 terminal.putCharacter('\n');
             }
             if (grid.isGameOver()) {
+                terminal.setForegroundColor(TextColor.ANSI.RED);
                 terminal.putString("      Game Over!");
+                terminal.putCharacter('\n');
             }
             terminal.flush();
         } catch (IOException e) {
