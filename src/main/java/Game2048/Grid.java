@@ -1,6 +1,9 @@
 package Game2048;
 
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class Grid {
     private final int dimension;
     Tile[][] grid;
@@ -58,15 +61,29 @@ public class Grid {
         }
     }
 
-    public boolean isGameOver() {
-        boolean gameOver = true;
+    private boolean isBoardFull() {
+        boolean isBoardFull = true;
         for (Tile[] row : grid) {
             for (Tile tile : row) {
-                gameOver &= !tile.isEmpty();
+                isBoardFull &= !tile.isEmpty();
             }
         }
+        return isBoardFull;
+    }
 
-        return gameOver;
+    private boolean noMovePossible() {
+        Tile[][] currentState = grid.clone();
+        boolean noMoves = true;
+        for (Direction direction : Direction.values()) {
+            shift(direction);
+            noMoves &= !theGridChangedFrom(currentState);
+            grid = currentState;
+        }
+        return noMoves;
+    }
+
+    public boolean isGameOver() {
+        return isBoardFull() && noMovePossible();
     }
 
     private boolean isEmptyRow(Tile[] row) {
@@ -82,9 +99,7 @@ public class Grid {
             while (row[row.length - 1].isEmpty()) {
                 Tile[] shiftedRow = new Tile[dimension];
                 shiftedRow[0] = row[row.length - 1];
-                for (int i = 1; i < dimension; i++) {
-                    shiftedRow[i] = row[i - 1];
-                }
+                System.arraycopy(row, 0, shiftedRow, 1, dimension - 1);
                 row = shiftedRow;
             }
         }
@@ -98,7 +113,7 @@ public class Grid {
         }
         for (int i = 0; i < dimension; i++) {
             Tile[] row = grid[i];
-            Tile[] mergedRow = merge(row);
+            Tile[] mergedRow = merge(row, direction);
             grid[i] = flush(mergedRow, direction);
         }
         if (direction == Direction.UP || direction == Direction.DOWN) {
@@ -145,9 +160,22 @@ public class Grid {
         return successor;
     }
 
-    private Tile[] merge(Tile[] row) {
+    private Tile[] reverse(Tile[] row) {
+        Tile[] reversed = new Tile[dimension];
+        for (int i = 0; i < dimension; i++) {
+            reversed[i] = row[dimension - 1 - i];
+        }
+        return reversed;
+    }
+
+
+    private Tile[] merge(Tile[] row, Direction direction) {
         Tile[] mergedRow = new Tile[dimension];
         int mergedNum = 0;
+
+        if (direction == Direction.DOWN || direction == Direction.RIGHT) {
+           row = reverse(row);
+        }
 
         Tile currentTile = row[0];
 
@@ -172,22 +200,36 @@ public class Grid {
             if (currentTile.hasEqualValue(successor)) {
                 mergedRow[mergedNum] = new Tile(currentTile.getValue() + successor.getValue());
                 mergedNum++;
+                currentTile = getNext(successor, row);
             } else {
                 mergedRow[mergedNum] = currentTile;
                 mergedNum++;
-                mergedRow[mergedNum] = successor;
-                mergedNum++;
+                currentTile = successor;
             }
-            currentTile = getNext(successor, row);
         }
         while(mergedNum < dimension) {
             mergedRow[mergedNum] = new EmptyCell();
             mergedNum++;
         }
 
+        if (direction == Direction.DOWN || direction == Direction.RIGHT) {
+            mergedRow = reverse(mergedRow);
+        }
+
         return mergedRow;
     }
     public enum Direction {
         LEFT, RIGHT, UP, DOWN
+    }
+
+    public boolean theGridChangedFrom(Tile[][] oldGrid) {
+        for (int i = 0; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++) {
+                if (grid[i][j].getValue() != oldGrid[i][j].getValue()) {
+                   return true;
+                }
+            }
+        }
+        return false;
     }
 }
