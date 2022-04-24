@@ -7,10 +7,16 @@ import java.util.Objects;
 public class Grid {
     private final int dimension;
     Tile[][] grid;
+    private int score;
 
     public Grid(int dimension) {
         this.dimension = dimension;
         grid = initialiseGrid(this.dimension);
+        score = 0;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     private Tile[][] initialiseGrid(int dimension) {
@@ -198,7 +204,9 @@ public class Grid {
                 break;
             }
             if (currentTile.hasEqualValue(successor)) {
-                mergedRow[mergedNum] = new Tile(currentTile.getValue() + successor.getValue());
+                int sum =  currentTile.getValue() + successor.getValue();
+                score += sum;
+                mergedRow[mergedNum] = new Tile(sum);
                 mergedNum++;
                 currentTile = getNext(successor, row);
             } else {

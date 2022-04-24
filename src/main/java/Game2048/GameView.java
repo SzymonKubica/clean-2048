@@ -29,6 +29,8 @@ public class GameView {
     public void updateDisplay() {
         try {
             terminal.setCursorPosition(0, 0);
+            terminal.putString("Score: " + grid.getScore());
+            terminal.putCharacter('\n');
             for (Tile[] row : grid.grid) {
                 for (Tile tile : row) {
                     if (tile.isEmpty()) {
@@ -43,7 +45,7 @@ public class GameView {
                 terminal.putCharacter('\n');
             }
             if (grid.isGameOver()) {
-                terminal.putString("Game Over!");
+                terminal.putString("   Game Over!");
             }
             terminal.flush();
         } catch (IOException e) {
