@@ -20,6 +20,13 @@ public class Tile {
         return value == 0;
     }
 
+    @Override
+    public String toString() {
+        return "Tile{" +
+                "value=" + value +
+                '}';
+    }
+
     public boolean hasEqualValue(Tile other) {
         return value == other.getValue();
     }

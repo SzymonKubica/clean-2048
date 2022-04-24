@@ -1,45 +1,75 @@
 package Game2048;
 
-import java.lang.reflect.Member;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Grid {
     private final int dimension;
-    final List<List<Tile>> grid;
+    final  ArrayList<ArrayList<Tile>> grid;
 
     public Grid(int dimension) {
         this.dimension = dimension;
-        grid = initaliseGrid(this.dimension);
+        grid = initialiseGrid(this.dimension);
     }
 
-    private List<List<Tile>> initaliseGrid(int dimension) {
-       List<List<Tile>> grid = new ArrayList<>();
+    private ArrayList<ArrayList<Tile>> initialiseGrid(int dimension) {
+       ArrayList<ArrayList<Tile>>  grid = new ArrayList<>();
        for (int i = 0; i < dimension; i++) {
-           List<Tile> row = new ArrayList<>();
+           ArrayList<Tile> row = new ArrayList<>();
            for (int j = 0; j < dimension; j++) {
                row.add(new EmptyCell());
            }
+           grid.add(row);
        }
        return grid;
     }
 
-    public void flushLeft(List<Tile> row, int dimension) {
+    private void flush(ArrayList<Tile> row, Direction direction) {
         for (int i = 0; i < dimension - row.size(); i++) {
-            row.add(new EmptyCell());
+            if (direction == Direction.LEFT || direction == Direction.UP) {
+                row.add(new EmptyCell());
+            } else {
+                row.add(0, new EmptyCell());
+            }
         }
+
     }
-    public void shiftLeft() {
-        for (List<Tile> row : grid) {
-            int index = grid.indexOf(row);
-            List<Tile> mergedRow = merge(row);
-            flushLeft(mergedRow, dimension);
-            grid.remove(index);
-            grid.add(index, mergedRow);
+
+    public void shift(Direction direction) {
+        if (direction == Direction.UP || direction == Direction.DOWN) {
+            transpose();
+        }
+        System.out.println(grid);
+        for (int i = 0; i < dimension; i++) {
+            ArrayList<Tile> row = grid.get(i);
+            ArrayList<Tile> mergedRow = merge(row);
+            flush(mergedRow, direction);
+            grid.remove(i);
+            grid.add(i, mergedRow);
+        }
+        if (direction == Direction.UP || direction == Direction.DOWN) {
+            transpose();
         }
     }
 
-    private Tile getNext(Tile current, List<Tile> row) {
+    private void swapIndices(int i, int j) {
+        Tile temp = grid.get(i).get(j);
+        grid.get(i).remove(j);
+        grid.get(i).add(j, grid.get(j).get(i));
+        grid.get(j).remove(i);
+        grid.get(j).add(i, temp);
+    }
+
+    private void transpose() {
+        for (int i = 0; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++) {
+                if (i != j) {
+                    swapIndices(i, j);
+                }
+            }
+        }
+    }
+
+    private Tile getNext(Tile current,ArrayList<Tile> row) {
         int currentIndex = row.indexOf(current);
         if (currentIndex < row.size() - 1) {
             return row.get(currentIndex + 1);
@@ -48,7 +78,7 @@ public class Grid {
         }
     }
 
-    private Tile getSuccessor(Tile current, List<Tile> row) {
+    private Tile getSuccessor(Tile current,ArrayList<Tile> row) {
         if (current == null) {
             return null;
         }
@@ -59,8 +89,8 @@ public class Grid {
         return successor;
     }
 
-    private List<Tile> merge(List<Tile> row) {
-        List<Tile> mergedRow = new ArrayList<>();
+    private ArrayList<Tile> merge(ArrayList<Tile> row) {
+        ArrayList<Tile> mergedRow = new ArrayList<>();
         Tile currentTile = row.get(0);
 
         // Skip over empty tiles.
@@ -90,5 +120,8 @@ public class Grid {
         }
 
         return mergedRow;
+    }
+    public enum Direction {
+        LEFT, RIGHT, UP, DOWN
     }
 }
