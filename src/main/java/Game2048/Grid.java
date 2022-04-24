@@ -1,36 +1,64 @@
 package Game2048;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Grid {
     private final int dimension;
-    final  ArrayList<ArrayList<Tile>> grid;
+    Tile[][] grid;
 
     public Grid(int dimension) {
         this.dimension = dimension;
         grid = initialiseGrid(this.dimension);
     }
 
-    private ArrayList<ArrayList<Tile>> initialiseGrid(int dimension) {
-       ArrayList<ArrayList<Tile>>  grid = new ArrayList<>();
+    private Tile[][] initialiseGrid(int dimension) {
+       Tile[][]  grid = new Tile[dimension][dimension];
        for (int i = 0; i < dimension; i++) {
-           ArrayList<Tile> row = new ArrayList<>();
            for (int j = 0; j < dimension; j++) {
-               row.add(new EmptyCell());
+               grid[i][j] = new EmptyCell();
            }
-           grid.add(row);
        }
        return grid;
     }
 
-    private void flush(ArrayList<Tile> row, Direction direction) {
-        for (int i = 0; i < dimension - row.size(); i++) {
-            if (direction == Direction.LEFT || direction == Direction.UP) {
-                row.add(new EmptyCell());
-            } else {
-                row.add(0, new EmptyCell());
+    private String printRows() {
+        StringBuilder sb = new StringBuilder();
+        for (Tile[] row : grid) {
+            sb.append("[");
+            for (Tile tile : row) {
+                sb.append(tile);
+            }
+            sb.append("]\n");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return printRows();
+    }
+
+    private boolean isEmptyRow(Tile[] row) {
+        boolean isEmpty = true;
+        for (int i = 0; i < dimension; i++) {
+           isEmpty &= row[i].isEmpty();
+        }
+        return isEmpty;
+    }
+
+    private Tile[] flush(Tile[] row, Direction direction) {
+        if (!isEmptyRow(row) && (direction == Direction.RIGHT || direction == Direction.DOWN)) {
+            while (row[row.length - 1].isEmpty()) {
+                Tile[] shiftedRow = new Tile[dimension];
+                shiftedRow[0] = row[row.length - 1];
+                for (int i = 1; i < dimension; i++) {
+                    shiftedRow[i] = row[i - 1];
+                }
+                row = shiftedRow;
             }
         }
+        return row;
 
     }
 
@@ -38,47 +66,45 @@ public class Grid {
         if (direction == Direction.UP || direction == Direction.DOWN) {
             transpose();
         }
-        System.out.println(grid);
         for (int i = 0; i < dimension; i++) {
-            ArrayList<Tile> row = grid.get(i);
-            ArrayList<Tile> mergedRow = merge(row);
-            flush(mergedRow, direction);
-            grid.remove(i);
-            grid.add(i, mergedRow);
+            Tile[] row = grid[i];
+            Tile[] mergedRow = merge(row);
+            grid[i] = flush(mergedRow, direction);
         }
         if (direction == Direction.UP || direction == Direction.DOWN) {
             transpose();
         }
     }
 
-    private void swapIndices(int i, int j) {
-        Tile temp = grid.get(i).get(j);
-        grid.get(i).remove(j);
-        grid.get(i).add(j, grid.get(j).get(i));
-        grid.get(j).remove(i);
-        grid.get(j).add(i, temp);
-    }
-
     private void transpose() {
+        Tile[][] transpose = new Tile[dimension][dimension];
         for (int i = 0; i < dimension; i++) {
             for (int j = 0; j < dimension; j++) {
-                if (i != j) {
-                    swapIndices(i, j);
-                }
+                transpose[i][j] = grid[j][i];
             }
         }
+        grid = transpose;
     }
 
-    private Tile getNext(Tile current,ArrayList<Tile> row) {
-        int currentIndex = row.indexOf(current);
-        if (currentIndex < row.size() - 1) {
-            return row.get(currentIndex + 1);
+    private int indexOf(Tile tile, Tile[] row) {
+        for (int i = 0; i < row.length; i++) {
+            if (row[i] == tile) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private Tile getNext(Tile current, Tile[] row) {
+        int currentIndex = indexOf(current, row);
+        if (currentIndex < row.length - 1) {
+            return row[currentIndex + 1];
         } else {
             return null;
         }
     }
 
-    private Tile getSuccessor(Tile current,ArrayList<Tile> row) {
+    private Tile getSuccessor(Tile current,Tile[] row) {
         if (current == null) {
             return null;
         }
@@ -89,9 +115,11 @@ public class Grid {
         return successor;
     }
 
-    private ArrayList<Tile> merge(ArrayList<Tile> row) {
-        ArrayList<Tile> mergedRow = new ArrayList<>();
-        Tile currentTile = row.get(0);
+    private Tile[] merge(Tile[] row) {
+        Tile[] mergedRow = new Tile[dimension];
+        int mergedNum = 0;
+
+        Tile currentTile = row[0];
 
         // Skip over empty tiles.
         while (currentTile != null && currentTile.isEmpty()) {
@@ -107,16 +135,24 @@ public class Grid {
         while (currentTile != null) {
             Tile successor = getSuccessor(currentTile, row);
             if (successor == null) {
-                mergedRow.add(currentTile);
+                mergedRow[mergedNum] = currentTile;
+                mergedNum++;
                 break;
             }
             if (currentTile.hasEqualValue(successor)) {
-                mergedRow.add(new Tile(currentTile.getValue() + successor.getValue()));
+                mergedRow[mergedNum] = new Tile(currentTile.getValue() + successor.getValue());
+                mergedNum++;
             } else {
-                mergedRow.add(currentTile);
-                mergedRow.add(successor);
+                mergedRow[mergedNum] = currentTile;
+                mergedNum++;
+                mergedRow[mergedNum] = successor;
+                mergedNum++;
             }
             currentTile = getNext(successor, row);
+        }
+        while(mergedNum < dimension) {
+            mergedRow[mergedNum] = new EmptyCell();
+            mergedNum++;
         }
 
         return mergedRow;
