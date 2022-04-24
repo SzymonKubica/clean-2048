@@ -1,7 +1,5 @@
 package Game2048;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Grid {
     private final int dimension;
@@ -37,6 +35,38 @@ public class Grid {
     @Override
     public String toString() {
         return printRows();
+    }
+
+    public void spawnTile() {
+        Tile newTile;
+        int seed = (int) (10 * Math.random()) % 2;
+        if (seed == 1)  {
+            newTile = new Tile(2);
+        } else {
+            newTile = new Tile(4);
+        }
+
+        boolean success = false;
+        while(!success) {
+            int xSeed = (int) (100 * Math.random()) % dimension;
+            int ySeed = (int) (100 * Math.random()) % dimension;
+
+            if (grid[xSeed][ySeed].isEmpty()) {
+                grid[xSeed][ySeed] = newTile;
+                success = true;
+            }
+        }
+    }
+
+    public boolean isGameOver() {
+        boolean gameOver = true;
+        for (Tile[] row : grid) {
+            for (Tile tile : row) {
+                gameOver &= !tile.isEmpty();
+            }
+        }
+
+        return gameOver;
     }
 
     private boolean isEmptyRow(Tile[] row) {
