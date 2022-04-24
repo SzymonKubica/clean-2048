@@ -20,6 +20,8 @@ public class GameView {
     public void startDisplay() {
         try {
             terminal = defaultTerminalFactory.createTerminal();
+            terminal.setCursorPosition(0, 0);
+            terminal.clearScreen();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -29,9 +31,12 @@ public class GameView {
     public void updateDisplay() {
         try {
             terminal.setCursorPosition(0, 0);
-            terminal.putString("Score: " + grid.getScore());
+            terminal.putString("      Score: " + grid.getScore());
+            terminal.putCharacter('\n');
+            terminal.putString(" -------------------");
             terminal.putCharacter('\n');
             for (Tile[] row : grid.grid) {
+                terminal.putCharacter('|');
                 for (Tile tile : row) {
                     if (tile.isEmpty()) {
                         terminal.putString("    ");
@@ -41,11 +46,11 @@ public class GameView {
                     terminal.putCharacter('|');
                 }
                 terminal.putCharacter('\n');
-                terminal.putString("--------------------");
+                terminal.putString(" -------------------");
                 terminal.putCharacter('\n');
             }
             if (grid.isGameOver()) {
-                terminal.putString("   Game Over!");
+                terminal.putString("      Game Over!");
             }
             terminal.flush();
         } catch (IOException e) {
