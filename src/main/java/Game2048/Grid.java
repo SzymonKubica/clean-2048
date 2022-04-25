@@ -1,9 +1,6 @@
 package Game2048;
 
 
-import java.util.Arrays;
-import java.util.Objects;
-
 public class Grid {
     private final int dimension;
     Tile[][] grid;
@@ -77,19 +74,21 @@ public class Grid {
         return isBoardFull;
     }
 
-    private boolean noMovePossible() {
+    private boolean noMovesPossible() {
         Tile[][] currentState = grid.clone();
+        int currentScore = score;
         boolean noMoves = true;
         for (Direction direction : Direction.values()) {
             shift(direction);
             noMoves &= !theGridChangedFrom(currentState);
             grid = currentState;
         }
+        score = currentScore;
         return noMoves;
     }
 
     public boolean isGameOver() {
-        return isBoardFull() && noMovePossible();
+        return isBoardFull() && noMovesPossible();
     }
 
     private boolean isEmptyRow(Tile[] row) {
