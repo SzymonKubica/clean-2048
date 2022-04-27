@@ -22,9 +22,11 @@ public class Tile {
 
     @Override
     public String toString() {
-        return "Tile{" +
-                "value=" + value +
-                '}';
+        if (isEmpty()) {
+            return "    ";
+        } else {
+            return String.format("%4s", getValue());
+        }
     }
 
     public boolean hasEqualValue(Tile other) {
