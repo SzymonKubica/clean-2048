@@ -1,6 +1,5 @@
 package Game2048;
 
-import com.googlecode.lanterna.input.KeyStroke;
 import java.io.IOException;
 
 public class TerminalGameView implements GameView {
@@ -17,12 +16,16 @@ public class TerminalGameView implements GameView {
         backend.printLine(String.valueOf(gameEngine.getScore()), Color.CYAN);
     }
 
+    private void printTile(Tile tile) throws IOException {
+        backend.printString(tile.toString(), Color.getTileColor(tile.getValue()));
+    }
+
     private void printGrid() throws IOException {
         backend.printLine(" -------------------");
         for (Tile[] row : gameEngine.grid) {
             backend.printCharacter('|');
             for (Tile tile : row) {
-                backend.printString(tile.toString(), Color.CYAN);
+                printTile(tile);
                 backend.printCharacter('|');
             }
             backend.printNewLine();

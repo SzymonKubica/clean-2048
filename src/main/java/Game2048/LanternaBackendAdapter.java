@@ -6,7 +6,10 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
 
+import static Game2048.Color.*;
 import static com.googlecode.lanterna.TextColor.ANSI.*;
+import static com.googlecode.lanterna.TextColor.ANSI.CYAN;
+import static com.googlecode.lanterna.TextColor.ANSI.RED;
 
 public class LanternaBackendAdapter implements TerminalBackend {
     private final DefaultTerminalFactory defaultTerminalFactory;
@@ -28,9 +31,18 @@ public class LanternaBackendAdapter implements TerminalBackend {
 
     private TextColor translateColor(Color color) {
         return switch (color) {
-            case GREY -> BLACK_BRIGHT;
             case CYAN -> CYAN;
+            case WHITE -> ANSI.WHITE;
+            case LIGHT_CYAN -> CYAN_BRIGHT;
+            case LIGHT_BLUE -> BLUE_BRIGHT;
+            case LIGHT_GREEN -> GREEN_BRIGHT;
+            case GREY -> BLACK_BRIGHT;
+            case GREEN -> ANSI.GREEN;
+            case LIGHT_YELLOW -> YELLOW_BRIGHT;
+            case YELLOW -> ANSI.YELLOW;
+            case LIGHT_RED -> RED_BRIGHT;
             case RED -> RED;
+            case MAGENTA -> ANSI.MAGENTA;
         };
     }
 
@@ -45,7 +57,7 @@ public class LanternaBackendAdapter implements TerminalBackend {
 
     @Override
     public void printLine(String line) throws IOException {
-        printLine(line, Color.GREY);
+        printLine(line, GREY);
     }
 
     @Override
@@ -61,7 +73,7 @@ public class LanternaBackendAdapter implements TerminalBackend {
 
     @Override
     public void printString(String string) throws IOException {
-        printString(string, Color.GREY);
+        printString(string, GREY);
     }
 
     @Override
@@ -72,7 +84,7 @@ public class LanternaBackendAdapter implements TerminalBackend {
 
     @Override
     public void printCharacter(char c) throws IOException {
-        printCharacter(c, Color.GREY);
+        printCharacter(c, GREY);
     }
 
     @Override
