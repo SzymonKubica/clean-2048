@@ -5,15 +5,56 @@ public class GameEngine {
     private final int dimension;
     Tile[][] grid;
     private int score;
+    private int numOccupiedTiles;
 
-    public GameEngine(int dimension) {
-        this.dimension = dimension;
+    public GameEngine(int gridDimension) {
+        this.dimension = gridDimension;
         grid = initialiseGrid(this.dimension);
         score = 0;
+        numOccupiedTiles = 0;
     }
 
     public int getScore() {
         return score;
+    }
+
+    public void startGame() {
+        spawnTile();
+    }
+
+    public void takeTurn(Direction direction) {
+        Tile[][] oldGrid = grid.clone();
+        shift(direction);
+
+        if (theGridChangedFrom(oldGrid)) {
+            spawnTile();
+        }
+    }
+
+    public boolean isGameOver() {
+        return isBoardFull() && noMovePossible();
+    }
+
+    private boolean isBoardFull() {
+        return  numOccupiedTiles >= dimension * dimension;
+    }
+
+    private boolean noMovePossible() {
+        // Save the state
+        Tile[][] currentState = grid.clone();
+        int currentScore = score;
+        int currentOccupied = numOccupiedTiles;
+
+        boolean noMoves = true;
+        for (Direction direction : Direction.values()) {
+            shift(direction);
+            noMoves &= !theGridChangedFrom(currentState);
+            grid = currentState;
+        }
+        // Restore the state
+        score = currentScore;
+        numOccupiedTiles = currentOccupied;
+        return noMoves;
     }
 
     private Tile[][] initialiseGrid(int dimension) {
@@ -38,55 +79,33 @@ public class GameEngine {
         return sb.toString();
     }
 
-    @Override
-    public String toString() {
-        return printRows();
-    }
-
-    public void spawnTile() {
-        Tile newTile;
+    private Tile generateTile() {
         int seed = (int) (10 * Math.random()) % 2;
         if (seed == 1)  {
-            newTile = new Tile(2);
+            return new Tile(2);
         } else {
-            newTile = new Tile(4);
+            return new Tile(4);
         }
+    }
+
+    private int getRandomCoordinate() {
+       return (int) (100 * Math.random()) % dimension;
+    }
+
+    private void spawnTile() {
+        Tile newTile = generateTile();
 
         boolean success = false;
         while(!success) {
-            int xSeed = (int) (100 * Math.random()) % dimension;
-            int ySeed = (int) (100 * Math.random()) % dimension;
+            int x = getRandomCoordinate();
+            int y = getRandomCoordinate();
 
-            if (grid[xSeed][ySeed].isEmpty()) {
-                grid[xSeed][ySeed] = newTile;
+            if (grid[x][y].isEmpty()) {
+                grid[x][y] = newTile;
                 success = true;
             }
         }
-    }
-
-    private boolean isBoardFull() {
-        boolean isBoardFull = true;
-        for (Tile[] row : grid) {
-            for (Tile tile : row) {
-                isBoardFull &= !tile.isEmpty();
-            }
-        }
-        return isBoardFull;
-    }
-
-    private boolean noMovePossible() {
-        Tile[][] currentState = grid.clone();
-        boolean noMoves = true;
-        for (Direction direction : Direction.values()) {
-            shift(direction);
-            noMoves &= !theGridChangedFrom(currentState);
-            grid = currentState;
-        }
-        return noMoves;
-    }
-
-    public boolean isGameOver() {
-        return isBoardFull() && noMovePossible();
+        numOccupiedTiles++;
     }
 
     private boolean isEmptyRow(Tile[] row) {
@@ -107,7 +126,6 @@ public class GameEngine {
             }
         }
         return row;
-
     }
 
     public void shift(Direction direction) {
@@ -171,7 +189,6 @@ public class GameEngine {
         return reversed;
     }
 
-
     private Tile[] merge(Tile[] row, Direction direction) {
         Tile[] mergedRow = new Tile[dimension];
         int mergedNum = 0;
@@ -192,7 +209,6 @@ public class GameEngine {
         }
 
         // Now the current tile is guaranteed to be non-empty, so we can perform non-trivial merging.
-
         while (currentTile != null) {
             Tile successor = getSuccessor(currentTile, row);
             if (successor == null) {
@@ -203,6 +219,7 @@ public class GameEngine {
             if (currentTile.hasEqualValue(successor)) {
                 int sum =  currentTile.getValue() + successor.getValue();
                 score += sum;
+                numOccupiedTiles--;
                 mergedRow[mergedNum] = new Tile(sum);
                 mergedNum++;
                 currentTile = getNext(successor, row);
@@ -224,7 +241,7 @@ public class GameEngine {
         return mergedRow;
     }
 
-    public boolean theGridChangedFrom(Tile[][] oldGrid) {
+    private boolean theGridChangedFrom(Tile[][] oldGrid) {
         for (int i = 0; i < dimension; i++) {
             for (int j = 0; j < dimension; j++) {
                 if (grid[i][j].getValue() != oldGrid[i][j].getValue()) {
@@ -233,5 +250,10 @@ public class GameEngine {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return printRows();
     }
 }

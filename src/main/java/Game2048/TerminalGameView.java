@@ -30,8 +30,14 @@ public class TerminalGameView implements GameView {
         }
     }
 
-    private void printGameOverMessage() throws IOException {
-        backend.printLine("      Game Over!", Color.RED);
+    @Override
+    public void printGameOverMessage() {
+        try {
+            backend.printLine("      Game Over!", Color.RED);
+            backend.flushChanges();
+        } catch (IOException e) {
+           throw new RuntimeException(e);
+        }
     }
 
     public void updateDisplay() {
@@ -39,9 +45,6 @@ public class TerminalGameView implements GameView {
             backend.resetCursorPosition();
             printScore();
             printGrid();
-            if (gameEngine.isGameOver()) {
-                printGameOverMessage();
-            }
             backend.flushChanges();
         } catch (IOException e) {
             throw new RuntimeException(e);
