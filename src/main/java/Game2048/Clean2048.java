@@ -1,8 +1,6 @@
 package Game2048;
 
 
-import java.util.Scanner;
-
 public class Clean2048 {
     private final GameEngine engine;
     private final GameView view;
@@ -14,12 +12,12 @@ public class Clean2048 {
         this.controller = controller;
     }
 
-    private void startGame() {
+    private void start() {
         engine.startGame();
         view.updateDisplay();
     }
 
-    private void endGame() {
+    private void end() {
         view.updateDisplay();
         view.printGameOverMessage();
     }
@@ -31,13 +29,17 @@ public class Clean2048 {
         GameView view = new TerminalGameView(engine, adapter);
         GameController controller = new LanternaGameController(adapter);
 
-        Clean2048 game = new Clean2048(engine, view, controller);
+        Clean2048 game = new Clean2048Builder()
+                .usingEngine(engine)
+                .displayedOn(view)
+                .controlledBy(controller)
+                .build();
 
-        game.startGame();
+        game.start();
         while (!engine.isGameOver()) {
             view.updateDisplay();
             engine.takeTurn(game.controller.getMove());
         }
-        game.endGame();
+        game.end();
     }
 }
