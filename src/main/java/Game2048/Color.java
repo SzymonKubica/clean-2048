@@ -14,7 +14,7 @@ public enum Color {
     MAGENTA(2048),
     GREY(0);
 
-    private int value;
+    private final int value;
     Color(int value) {
         this.value = value;
     }
