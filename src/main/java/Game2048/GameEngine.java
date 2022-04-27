@@ -1,15 +1,12 @@
 package Game2048;
 
 
-import java.util.Arrays;
-import java.util.Objects;
-
-public class Grid {
+public class GameEngine {
     private final int dimension;
     Tile[][] grid;
     private int score;
 
-    public Grid(int dimension) {
+    public GameEngine(int dimension) {
         this.dimension = dimension;
         grid = initialiseGrid(this.dimension);
         score = 0;
@@ -225,9 +222,6 @@ public class Grid {
         }
 
         return mergedRow;
-    }
-    public enum Direction {
-        LEFT, RIGHT, UP, DOWN
     }
 
     public boolean theGridChangedFrom(Tile[][] oldGrid) {
