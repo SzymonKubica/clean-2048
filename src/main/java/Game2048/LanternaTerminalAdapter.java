@@ -1,8 +1,8 @@
 package Game2048;
 
 import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
+import com.googlecode.lanterna.terminal.TerminalFactory;
 
 import java.io.IOException;
 
@@ -11,12 +11,12 @@ import static com.googlecode.lanterna.TextColor.ANSI.*;
 import static com.googlecode.lanterna.TextColor.ANSI.CYAN;
 import static com.googlecode.lanterna.TextColor.ANSI.RED;
 
-public class LanternaBackendAdapter implements TerminalBackend {
-    private final DefaultTerminalFactory defaultTerminalFactory;
+public class LanternaTerminalAdapter implements TerminalBackend {
+    private final TerminalFactory defaultTerminalFactory;
     private Terminal terminal = null;
 
-    public LanternaBackendAdapter() {
-        this.defaultTerminalFactory = new DefaultTerminalFactory();
+    public LanternaTerminalAdapter(TerminalFactory factory) {
+        this.defaultTerminalFactory = factory;
         startDisplay();
     }
 

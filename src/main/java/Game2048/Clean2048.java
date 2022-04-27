@@ -1,6 +1,8 @@
 package Game2048;
 
 
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+
 public class Clean2048 {
     private final GameEngine engine;
     private final GameView view;
@@ -24,10 +26,10 @@ public class Clean2048 {
 
     public static void main(String[] args) {
 
-        LanternaBackendAdapter adapter = new LanternaBackendAdapter();
+        TerminalBackend terminal = new LanternaTerminalAdapter(new DefaultTerminalFactory());
         GameEngine engine = new GameEngine(4);
-        GameView view = new TerminalGameView(engine, adapter);
-        GameController controller = new LanternaGameController(adapter);
+        GameView view = new TerminalGameView(engine, terminal);
+        GameController controller = new LanternaGameController((LanternaTerminalAdapter) terminal);
 
         Clean2048 game = new Clean2048Builder()
                 .usingEngine(engine)

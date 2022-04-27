@@ -5,8 +5,8 @@ import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
 
 public class LanternaGameController implements GameController {
-    private final LanternaBackendAdapter adapter;
-    public LanternaGameController(LanternaBackendAdapter adapter) {
+    private final LanternaTerminalAdapter adapter;
+    public LanternaGameController(LanternaTerminalAdapter adapter) {
         this.adapter = adapter;
     }
     @Override
