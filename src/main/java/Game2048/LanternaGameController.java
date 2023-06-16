@@ -5,15 +5,15 @@ import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
 
 public class LanternaGameController implements GameController {
-    private final LanternaTerminalAdapter adapter;
-    public LanternaGameController(LanternaTerminalAdapter adapter) {
-        this.adapter = adapter;
+    private final TerminalBackend terminal;
+    public LanternaGameController(TerminalBackend terminal) {
+        this.terminal = terminal;
     }
     @Override
     public Direction getMove() {
         KeyType key;
         try {
-            key = adapter.getGameHostTerminal().readInput().getKeyType();
+            key = terminal.getUserInput();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

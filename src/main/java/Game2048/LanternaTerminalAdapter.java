@@ -1,6 +1,7 @@
 package Game2048;
 
 import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.TerminalFactory;
 
@@ -44,10 +45,6 @@ public class LanternaTerminalAdapter implements TerminalBackend {
             case RED -> RED;
             case MAGENTA -> ANSI.MAGENTA;
         };
-    }
-
-    public Terminal getGameHostTerminal() {
-        return this.terminal;
     }
 
     @Override
@@ -96,5 +93,10 @@ public class LanternaTerminalAdapter implements TerminalBackend {
     @Override
     public void flushChanges() throws IOException {
         terminal.flush();
+    }
+
+    @Override
+    public KeyType getUserInput() throws IOException {
+        return terminal.readInput().getKeyType();
     }
 }

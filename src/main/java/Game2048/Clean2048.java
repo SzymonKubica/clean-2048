@@ -29,7 +29,7 @@ public class Clean2048 {
         TerminalBackend terminal = new LanternaTerminalAdapter(new DefaultTerminalFactory());
         GameEngine engine = new GameEngine(4);
         GameView view = new TerminalGameView(engine, terminal);
-        GameController controller = new LanternaGameController((LanternaTerminalAdapter) terminal);
+        GameController controller = new LanternaGameController(terminal);
 
         Clean2048 game = new Clean2048Builder()
                 .usingEngine(engine)

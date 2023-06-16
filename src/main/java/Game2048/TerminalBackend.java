@@ -1,5 +1,7 @@
 package Game2048;
 
+import com.googlecode.lanterna.input.KeyType;
+
 import java.io.IOException;
 
 public interface TerminalBackend {
@@ -12,4 +14,5 @@ public interface TerminalBackend {
     void printCharacter(char c) throws IOException;
     void printCharacter(char c, Color color) throws IOException;
     void flushChanges() throws IOException;
+    KeyType getUserInput() throws IOException;
 }
