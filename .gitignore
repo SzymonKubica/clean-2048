@@ -1,1 +1,11 @@
+# Java compiled classes
 *.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Gradle
+.gradle
+build/
