@@ -1,10 +1,10 @@
-package Game2048;
+package Game2048.view;
 
 import com.googlecode.lanterna.input.KeyType;
 
 import java.io.IOException;
 
-public interface TerminalBackend {
+public interface Terminal {
     void resetCursorPosition() throws IOException;
     void printLine(String line) throws IOException;
     void printLine(String line, Color color) throws IOException;

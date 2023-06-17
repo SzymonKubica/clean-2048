@@ -1,5 +1,7 @@
-package Game2048;
+package Game2048.engine;
 
+
+import Game2048.controller.Direction;
 
 public class GameEngine {
     private final int dimension;
@@ -255,5 +257,9 @@ public class GameEngine {
     @Override
     public String toString() {
         return printRows();
+    }
+
+    public Tile[][] getGrid() {
+        return grid.clone();
     }
 }
