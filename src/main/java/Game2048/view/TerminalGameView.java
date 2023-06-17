@@ -1,9 +1,8 @@
 package Game2048.view;
 
 import Game2048.engine.Tile;
-import lombok.AllArgsConstructor;
-
 import java.io.IOException;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class TerminalGameView implements GameView {

@@ -1,8 +1,8 @@
 package Game2048;
 
 import Game2048.controller.GameController;
-import Game2048.engine.GameEngine;
 import Game2048.controller.TerminalGameController;
+import Game2048.engine.GameEngine;
 import Game2048.lib.lanterna.LanternaTerminalAdapter;
 import Game2048.view.GameView;
 import Game2048.view.Terminal;

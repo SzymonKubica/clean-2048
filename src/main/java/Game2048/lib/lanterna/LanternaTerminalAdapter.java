@@ -1,18 +1,17 @@
 package Game2048.lib.lanterna;
 
+import static Game2048.view.Color.*;
+import static com.googlecode.lanterna.TextColor.ANSI.*;
+import static com.googlecode.lanterna.TextColor.ANSI.CYAN;
+import static com.googlecode.lanterna.TextColor.ANSI.RED;
+
 import Game2048.view.Color;
 import Game2048.view.Terminal;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.TerminalFactory;
-
 import java.io.IOException;
-
-import static Game2048.view.Color.*;
-import static com.googlecode.lanterna.TextColor.ANSI.*;
-import static com.googlecode.lanterna.TextColor.ANSI.CYAN;
-import static com.googlecode.lanterna.TextColor.ANSI.RED;
 
 public class LanternaTerminalAdapter implements Terminal {
   private final TerminalFactory defaultTerminalFactory;

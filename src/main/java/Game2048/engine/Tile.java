@@ -1,10 +1,9 @@
 package Game2048.engine;
 
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Objects;
 
 @AllArgsConstructor
 public class Tile {

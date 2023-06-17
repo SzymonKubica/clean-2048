@@ -1,7 +1,6 @@
 package Game2048.view;
 
 import com.googlecode.lanterna.input.KeyType;
-
 import java.io.IOException;
 
 public interface Terminal {
