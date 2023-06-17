@@ -1,7 +1,6 @@
 package Game2048;
 
 import Game2048.controller.Direction;
-import Game2048.engine.EmptyCell;
 import Game2048.engine.GameEngine;
 import Game2048.engine.Tile;
 import org.junit.Test;
@@ -20,7 +19,7 @@ public class GameEngineTest {
 
   @Test
   public void mergingMergesConsecutiveTilesOfSameValueEvenIfNotAdjacent() {
-    Tile[] row = {new Tile(2), new EmptyCell(), new Tile(2), new EmptyCell()};
+    Tile[] row = {new Tile(2), Tile.getEmptyTile(), new Tile(2), Tile.getEmptyTile()};
     GameEngine gameEngine = new GameEngine(4);
     gameEngine.getGrid()[0] = row;
     gameEngine.shift(Direction.LEFT);
@@ -29,7 +28,7 @@ public class GameEngineTest {
 
   @Test
   public void unmergedTilesGetAddedToTheMergedList() {
-    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), new EmptyCell()};
+    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), Tile.getEmptyTile()};
     GameEngine gameEngine = new GameEngine(4);
     gameEngine.getGrid()[0] = row;
     gameEngine.shift(Direction.LEFT);
@@ -41,7 +40,7 @@ public class GameEngineTest {
 
   @Test
   public void shiftLeftFlushesTheContentsToTheLeft() {
-    Tile[] row = {new EmptyCell(), new Tile(2), new Tile(4), new Tile(2)};
+    Tile[] row = {Tile.getEmptyTile(), new Tile(2), new Tile(4), new Tile(2)};
     GameEngine gameEngine = new GameEngine(4);
     gameEngine.getGrid()[0] = row;
     gameEngine.shift(Direction.LEFT);
@@ -54,7 +53,7 @@ public class GameEngineTest {
 
   @Test
   public void shiftRightFlushesTheContentsToTheRight() {
-    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), new EmptyCell()};
+    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), Tile.getEmptyTile()};
     GameEngine gameEngine = new GameEngine(4);
     gameEngine.getGrid()[0] = row;
     gameEngine.shift(Direction.RIGHT);
@@ -67,7 +66,7 @@ public class GameEngineTest {
 
   @Test
   public void shiftDownFlushesTheContentsDownwards() {
-    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), new EmptyCell()};
+    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), Tile.getEmptyTile()};
     GameEngine gameEngine = new GameEngine(4);
     gameEngine.getGrid()[0] = row;
     gameEngine.shift(Direction.DOWN);
@@ -80,7 +79,7 @@ public class GameEngineTest {
 
   @Test
   public void shiftUpFlushesTheContentsUpwards() {
-    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), new EmptyCell()};
+    Tile[] row = {new Tile(2), new Tile(4), new Tile(2), Tile.getEmptyTile()};
     GameEngine gameEngine = new GameEngine(4);
     gameEngine.getGrid()[3] = row;
     gameEngine.shift(Direction.UP);

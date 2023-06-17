@@ -30,7 +30,7 @@ public class Clean2048 {
   }
 
   private void updateDisplay() {
-    view.updateDisplay(engine.getScore(), engine.getGrid());
+    view.updateDisplay(engine.getScore(), engine.getSimplifiedGrid());
   }
 
   private void end() {

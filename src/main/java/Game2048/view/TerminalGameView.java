@@ -1,6 +1,5 @@
 package Game2048.view;
 
-import Game2048.engine.Tile;
 import java.io.IOException;
 import lombok.AllArgsConstructor;
 
@@ -9,7 +8,7 @@ public class TerminalGameView implements GameView {
   private final Terminal backend;
 
   @Override
-  public void updateDisplay(int score, Tile[][] grid) {
+  public void updateDisplay(int score, int[][] grid) {
     try {
       backend.resetCursorPosition();
       printScore(score);
@@ -25,11 +24,11 @@ public class TerminalGameView implements GameView {
     backend.printLine(String.valueOf(score), Color.CYAN);
   }
 
-  private void printGrid(Tile[][] grid) throws IOException {
+  private void printGrid(int[][] grid) throws IOException {
     backend.printLine(" -------------------");
-    for (Tile[] row : grid) {
+    for (int[] row : grid) {
       backend.printCharacter('|');
-      for (Tile tile : row) {
+      for (int tile : row) {
         printTile(tile);
         backend.printCharacter('|');
       }
@@ -38,8 +37,9 @@ public class TerminalGameView implements GameView {
     }
   }
 
-  private void printTile(Tile tile) throws IOException {
-    backend.printString(tile.toString(), Color.getTileColor(tile.getValue()));
+  private void printTile(int tile) throws IOException {
+    String tileString = (tile == 0) ? "    " : String.format("%4s", tile);
+    backend.printString(tileString, Color.getTileColor(tile));
   }
 
   @Override
