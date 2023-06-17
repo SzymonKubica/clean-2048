@@ -1,8 +1,9 @@
 package Game2048.engine;
 
+import static Game2048.engine.GridUtil.*;
+
 import Game2048.controller.Direction;
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class GameEngine {
@@ -21,76 +22,82 @@ public class GameEngine {
   }
 
   public void takeTurn(Direction direction) {
-    Tile[][] oldGrid = grid.clone();
-    shift(direction);
-
-    if (theGridChangedFrom(oldGrid)) {
+    if (shiftWillChangeState(direction)) {
+      shift(direction);
       spawnTile();
     }
   }
 
-  private Tile[][] initialiseGrid(int dimension) {
-    Tile[][] grid = new Tile[dimension][dimension];
-    for (int i = 0; i < dimension; i++) {
-      for (int j = 0; j < dimension; j++) {
-        grid[j][i] = Tile.getEmptyTile();
+  private boolean shiftWillChangeState(Direction direction) {
+    // The shift will change state if it will cause a merge in that direction,
+    // or if there is enough empty space so that tiles will change their position.
+    // An important edge case is when we are trying to shift in say vertical direction and all
+    // columns are either empty or fully filled with unmergeable sequences of tiles.
+    // In this case, no tiles will move around and the state will not change.
+    // Hence we don't spawn a new tile because the user needs to shift in the perpendicular
+    // direction.
+    if (isSpaceToShift(direction)) {
+      return true;
+    }
+    return (direction.isVertical()) ? verticalMergePossible() : horizontalMergePossible();
+  }
+
+  private boolean isSpaceToShift(Direction direction) {
+    if (direction.isVertical()) {
+      for (int i = 0; i < dimension; i++) {
+        Tile[] column = getColumn(i);
+        if (willTilesMove(column)) {
+          return true;
+        }
+      }
+    } else {
+      for (Tile[] row : grid) {
+        if (willTilesMove(row)) {
+          return true;
+        }
       }
     }
-    return grid;
+    return false;
+  }
+
+  private boolean willTilesMove(Tile[] sequence) {
+    // When the sequence is neigher full nor empty and the tiles there will change their
+    // position after shifting.
+    return !isEmptySequence(sequence) && !isFullSequence(sequence);
   }
 
   private void spawnTile() {
     Tile newTile = Tile.generateRandomTile();
-    Position emptyCell = getRandomEmptyCell();
+    GridUtil.Position emptyCell = getRandomEmptyCell(grid);
     grid[emptyCell.getY()][emptyCell.getX()] = newTile;
     numOccupiedTiles++;
   }
 
-  private Position getRandomEmptyCell() {
-    while (true) {
-      int x = getRandomCoordinate();
-      int y = getRandomCoordinate();
-      if (grid[y][x].isEmpty()) {
-        return new Position(x, y);
-      }
-    }
-  }
-
-  private int getRandomCoordinate() {
-    return (int) (100 * Math.random()) % dimension;
-  }
-
-  private boolean isEmptyRow(Tile[] row) {
-    boolean isEmpty = true;
-    for (int i = 0; i < dimension; i++) {
-      isEmpty &= row[i].isEmpty();
-    }
-    return isEmpty;
-  }
-
-  private Tile[] flush(Tile[] row, Direction direction) {
-    if (!isEmptyRow(row) && (direction == Direction.RIGHT || direction == Direction.DOWN)) {
-      while (row[row.length - 1].isEmpty()) {
-        Tile[] shiftedRow = new Tile[dimension];
-        shiftedRow[0] = row[row.length - 1];
-        System.arraycopy(row, 0, shiftedRow, 1, dimension - 1);
-        row = shiftedRow;
-      }
-    }
-    return row;
-  }
-
   public void shift(Direction direction) {
-    if (direction == Direction.UP || direction == Direction.DOWN) {
-      transpose();
+    if (direction.isVertical()) {
+      shiftVertically(direction);
+    } else {
+      shiftHorizontally(direction);
     }
+  }
+
+  private void shiftVertically(Direction direction) {
+    assert (direction.isVertical());
+    transpose();
     for (int i = 0; i < dimension; i++) {
       Tile[] row = grid[i];
       Tile[] mergedRow = merge(row, direction);
-      grid[i] = flush(mergedRow, direction);
+      grid[i] = mergedRow;
     }
-    if (direction == Direction.UP || direction == Direction.DOWN) {
-      transpose();
+    transpose();
+  }
+
+  private void shiftHorizontally(Direction direction) {
+    assert (direction.isHorizontal());
+    for (int i = 0; i < dimension; i++) {
+      Tile[] row = grid[i];
+      Tile[] mergedRow = merge(row, direction);
+      grid[i] = mergedRow;
     }
   }
 
@@ -193,17 +200,6 @@ public class GameEngine {
     return mergedRow;
   }
 
-  private boolean theGridChangedFrom(Tile[][] oldGrid) {
-    for (int i = 0; i < dimension; i++) {
-      for (int j = 0; j < dimension; j++) {
-        if (grid[i][j].getValue() != oldGrid[i][j].getValue()) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   public Tile[][] getGrid() {
     return grid.clone();
   }
@@ -217,21 +213,25 @@ public class GameEngine {
   }
 
   private boolean noMovePossible() {
-    // No move is possible when the grid is full and no tiles can be merged.
-    // We know that no tiles can be merged if there is no row or column in which
-    // two adjacent tiles have the same value.
+    return !horizontalMergePossible() && !verticalMergePossible();
+  }
+
+  private boolean horizontalMergePossible() {
     for (Tile[] row : grid) {
       if (canBeMerged(row)) {
-        return false;
+        return true;
       }
     }
+    return false;
+  }
 
+  private boolean verticalMergePossible() {
     for (int i = 0; i < dimension; i++) {
       if (canBeMerged(getColumn(i))) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   private Tile[] getColumn(int index) {
@@ -255,11 +255,5 @@ public class GameEngine {
     return Arrays.stream(grid)
         .map(row -> Arrays.stream(row).mapToInt(Tile::getValue).toArray())
         .toArray(int[][]::new);
-  }
-
-  @AllArgsConstructor
-  private class Position {
-    @Getter private final int x;
-    @Getter private final int y;
   }
 }
