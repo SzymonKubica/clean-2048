@@ -18,7 +18,9 @@ repositories {
 
 dependencies {
     api("com.googlecode.lanterna:lanterna:3.1.1")
-    testImplementation("junit:junit:RELEASE")
+    implementation("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok:1.18.26")
+    annotationProcessor("org.projectlombok:lombok:1.18.26")
 }
 
 group = "groupId"
