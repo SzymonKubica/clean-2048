@@ -39,34 +39,37 @@ public class GameEngine {
     // In this case, no tiles will move around and the state will not change.
     // Hence, we don't spawn a new tile because the user needs to shift in the perpendicular
     // direction.
-    if (isSpaceToShift(direction)) {
-      return true;
-    }
-    return (direction.isVertical()) ? verticalMergePossible() : horizontalMergePossible();
+    boolean mergeWillOccur =
+        (direction.isVertical()) ? verticalMergePossible() : horizontalMergePossible();
+    return isSpaceToMove(direction) || mergeWillOccur;
   }
 
-  private boolean isSpaceToShift(Direction direction) {
+  private boolean isSpaceToMove(Direction direction) {
     if (direction.isVertical()) {
-      for (int i = 0; i < dimension; i++) {
-        Tile[] column = GridUtil.getColumn(i, grid);
-        if (willTilesMove(column)) {
-          return true;
-        }
-      }
+      return IntStream.range(0, dimension)
+          .anyMatch(i -> isShiftableSequence(getColumn(i, grid), direction));
     } else {
-      for (Tile[] row : grid) {
-        if (willTilesMove(row)) {
-          return true;
+      return Arrays.stream(grid).anyMatch(row -> isShiftableSequence(row, direction));
+    }
+  }
+
+  private boolean isShiftableSequence(Tile[] sequence, Direction direction) {
+    // A sequence is shiftable if it contains an empty tile followed by a non-empty tile which will
+    // occupy its place after the shift.
+    Tile[] sequenceCopy = sequence.clone();
+    if (needsBackwardsMerging(direction)) {
+      sequenceCopy = reverse(sequenceCopy);
+    }
+    for (int i = 0; i < sequenceCopy.length - 1; i++) {
+      if (sequenceCopy[i].isEmpty()) {
+        for (int j = i + 1; j < sequenceCopy.length; j++) {
+          if (!sequenceCopy[j].isEmpty()) {
+            return true;
+          }
         }
       }
     }
     return false;
-  }
-
-  private boolean willTilesMove(Tile[] sequence) {
-    // When the sequence is neither full nor empty then the tiles can
-    // change their position after shifting. That change can occur if there is at least
-    return !isEmptySequence(sequence) && !isFullSequence(sequence);
   }
 
   private void spawnTile() {
@@ -150,7 +153,7 @@ public class GameEngine {
   }
 
   private boolean verticalMergePossible() {
-    return IntStream.of(dimension - 1).anyMatch(i -> canBeMerged(GridUtil.getColumn(i, grid)));
+    return IntStream.range(0, dimension).anyMatch(i -> canBeMerged(GridUtil.getColumn(i, grid)));
   }
 
   private boolean canBeMerged(Tile[] sequence) {
