@@ -6,17 +6,18 @@ import Game2048.controller.Direction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 import lombok.Getter;
 
 public class GameEngine {
   private final int dimension;
   Tile[][] grid;
   @Getter private int score;
-  private int numOccupiedTiles;
+  private int occupiedTiles;
 
   public GameEngine(int gridDimension) {
     this.dimension = gridDimension;
-    grid = initialiseGrid(this.dimension);
+    grid = GridUtil.initialiseGrid(this.dimension);
   }
 
   public void startGame() {
@@ -47,7 +48,7 @@ public class GameEngine {
   private boolean isSpaceToShift(Direction direction) {
     if (direction.isVertical()) {
       for (int i = 0; i < dimension; i++) {
-        Tile[] column = getColumn(i);
+        Tile[] column = GridUtil.getColumn(i, grid);
         if (willTilesMove(column)) {
           return true;
         }
@@ -70,9 +71,9 @@ public class GameEngine {
 
   private void spawnTile() {
     Tile newTile = Tile.generateRandomTile();
-    GridUtil.Position emptyCell = getRandomEmptyCell(grid);
+    GridUtil.Position emptyCell = GridUtil.getRandomEmptyCell(grid);
     grid[emptyCell.getY()][emptyCell.getX()] = newTile;
-    numOccupiedTiles++;
+    occupiedTiles++;
   }
 
   public void shift(Direction direction) {
@@ -85,47 +86,41 @@ public class GameEngine {
 
   private void shiftVertically(Direction direction) {
     assert (direction.isVertical());
-    transpose();
+    grid = GridUtil.transpose(grid);
     shiftHorizontally(direction);
-    transpose();
+    grid = GridUtil.transpose(grid);
   }
 
   private void shiftHorizontally(Direction direction) {
     grid = Arrays.stream(grid).map(row -> merge(row, direction)).toArray(Tile[][]::new);
   }
 
-  private void transpose() {
-    Tile[][] transpose = new Tile[dimension][dimension];
-    for (int i = 0; i < dimension; i++) {
-      for (int j = 0; j < dimension; j++) {
-        transpose[i][j] = grid[j][i];
-      }
-    }
-    grid = transpose;
+  private Tile[] merge(Tile[] row, Direction direction) {
+    return (needsBackwardsMerging(direction)) ? reverse(mergeLeft(reverse(row))) : mergeLeft(row);
   }
 
-  private Tile[] reverse(Tile[] row) {
-    Tile[] reversed = new Tile[dimension];
-    for (int i = 0; i < dimension; i++) {
-      reversed[i] = row[dimension - 1 - i];
-    }
-    return reversed;
+  private boolean needsBackwardsMerging(Direction direction) {
+    return direction == Direction.DOWN || direction == Direction.RIGHT;
   }
 
-  public Tile[] merge2(Tile[] row) {
+  public Tile[] mergeLeft(Tile[] row) {
     List<Tile> merged = new ArrayList<>();
     List<Tile> nonEmptyTiles =
         new ArrayList<>(Arrays.stream(row).filter(tile -> !tile.isEmpty()).toList());
+
     while (!nonEmptyTiles.isEmpty()) {
-      Tile current = nonEmptyTiles.remove(0);
-      if (nonEmptyTiles.isEmpty()) {
-        merged.add(current);
+      if (nonEmptyTiles.size() == 1) {
+        merged.add(nonEmptyTiles.get(0));
         break;
       }
+
+      Tile current = nonEmptyTiles.remove(0);
       Tile successor = nonEmptyTiles.get(0);
+
       if (current.equals(successor)) {
         nonEmptyTiles.remove(0);
         merged.add(Tile.merge(current, successor));
+        occupiedTiles--;
       } else {
         merged.add(current);
       }
@@ -138,32 +133,12 @@ public class GameEngine {
     return merged.toArray(Tile[]::new);
   }
 
-
-  private Tile[] merge(Tile[] row, Direction direction) {
-
-    if (direction == Direction.DOWN || direction == Direction.RIGHT) {
-      row = reverse(row);
-    }
-
-    Tile[] mergedRow = merge2(row);
-
-    if (direction == Direction.DOWN || direction == Direction.RIGHT) {
-      mergedRow = reverse(mergedRow);
-    }
-
-    return mergedRow;
-  }
-
-  public Tile[][] getGrid() {
-    return grid.clone();
-  }
-
   public boolean isGameOver() {
     return isBoardFull() && noMovePossible();
   }
 
   private boolean isBoardFull() {
-    return numOccupiedTiles >= dimension * dimension;
+    return occupiedTiles >= dimension * dimension;
   }
 
   private boolean noMovePossible() {
@@ -171,34 +146,19 @@ public class GameEngine {
   }
 
   private boolean horizontalMergePossible() {
-    for (Tile[] row : grid) {
-      if (canBeMerged(row)) {
-        return true;
-      }
-    }
-    return false;
+    return Arrays.stream(grid).anyMatch(this::canBeMerged);
   }
 
   private boolean verticalMergePossible() {
-    for (int i = 0; i < dimension; i++) {
-      if (canBeMerged(getColumn(i))) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private Tile[] getColumn(int index) {
-    Tile[] column = new Tile[dimension];
-    for (int i = 0; i < dimension; i++) {
-      column[i] = grid[i][index];
-    }
-    return column;
+    return IntStream.of(dimension - 1).anyMatch(i -> canBeMerged(GridUtil.getColumn(i, grid)));
   }
 
   private boolean canBeMerged(Tile[] sequence) {
-    for (int i = 0; i < dimension - 1; i++) {
-      if (sequence[i].equals(sequence[i + 1])) {
+    List<Tile> nonEmptyTiles =
+        new ArrayList<>(Arrays.stream(sequence).filter(tile -> !tile.isEmpty()).toList());
+
+    for (int i = 0; i < nonEmptyTiles.size() - 1; i++) {
+      if (nonEmptyTiles.get(i).equals(nonEmptyTiles.get(i + 1))) {
         return true;
       }
     }
@@ -206,8 +166,10 @@ public class GameEngine {
   }
 
   public int[][] getSimplifiedGrid() {
-    return Arrays.stream(grid)
-        .map(row -> Arrays.stream(row).mapToInt(Tile::getValue).toArray())
-        .toArray(int[][]::new);
+    return GridUtil.mapToIntGrid(grid);
+  }
+
+  public Tile[][] getGrid() {
+    return grid.clone();
   }
 }
