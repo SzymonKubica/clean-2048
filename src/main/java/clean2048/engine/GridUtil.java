@@ -1,4 +1,4 @@
-package Game2048.engine;
+package clean2048.engine;
 
 import java.util.Arrays;
 import lombok.AllArgsConstructor;

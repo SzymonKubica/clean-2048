@@ -1,6 +1,6 @@
-package Game2048.engine;
+package clean2048.engine;
 
-import Game2048.controller.Direction;
+import clean2048.controller.Direction;
 import org.junit.Test;
 
 public class GameEngineTest {

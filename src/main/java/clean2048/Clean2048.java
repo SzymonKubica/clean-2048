@@ -1,12 +1,12 @@
-package Game2048;
+package clean2048;
 
-import Game2048.controller.GameController;
-import Game2048.controller.TerminalGameController;
-import Game2048.engine.GameEngine;
-import Game2048.lib.lanterna.LanternaTerminalAdapter;
-import Game2048.view.GameView;
-import Game2048.view.Terminal;
-import Game2048.view.TerminalGameView;
+import clean2048.controller.GameController;
+import clean2048.controller.TerminalGameController;
+import clean2048.engine.GameEngine;
+import clean2048.lib.lanterna.LanternaTerminalAdapter;
+import clean2048.view.GameView;
+import clean2048.view.Terminal;
+import clean2048.view.TerminalGameView;
 import lombok.Builder;
 
 @Builder(setterPrefix = "with")

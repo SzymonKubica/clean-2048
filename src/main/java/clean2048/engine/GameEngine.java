@@ -1,8 +1,8 @@
-package Game2048.engine;
+package clean2048.engine;
 
-import static Game2048.engine.GridUtil.*;
+import static clean2048.engine.GridUtil.*;
 
-import Game2048.controller.Direction;
+import clean2048.controller.Direction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

@@ -1,11 +1,10 @@
-package Game2048.engine;
+package clean2048.engine;
 
 import java.util.Objects;
 import lombok.Getter;
-import lombok.Setter;
 
 public class Tile {
-  @Getter @Setter private final int value;
+  @Getter private final int value;
 
   public Tile(int value) {
     this.value = value;

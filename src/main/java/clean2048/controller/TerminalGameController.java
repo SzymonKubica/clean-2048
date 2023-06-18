@@ -1,6 +1,6 @@
-package Game2048.controller;
+package clean2048.controller;
 
-import Game2048.view.Terminal;
+import clean2048.view.Terminal;
 import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package Game2048.view;
+package clean2048.view;
 
 public enum Color {
   WHITE(2),

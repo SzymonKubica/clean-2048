@@ -1,12 +1,12 @@
-package Game2048.lib.lanterna;
+package clean2048.lib.lanterna;
 
-import static Game2048.view.Color.*;
+import static clean2048.view.Color.*;
 import static com.googlecode.lanterna.TextColor.ANSI.*;
 import static com.googlecode.lanterna.TextColor.ANSI.CYAN;
 import static com.googlecode.lanterna.TextColor.ANSI.RED;
 
-import Game2048.view.Color;
-import Game2048.view.Terminal;
+import clean2048.view.Color;
+import clean2048.view.Terminal;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;

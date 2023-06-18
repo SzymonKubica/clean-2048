@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    api("com.googlecode.lanterna:lanterna:3.1.1")
+    implementation("com.googlecode.lanterna:lanterna:3.1.1")
     implementation("org.projectlombok:lombok:1.18.26")
     testImplementation("junit:junit:4.13.1")
     compileOnly("org.projectlombok:lombok:1.18.26")
@@ -29,6 +29,15 @@ version = "1.0-SNAPSHOT"
 description = "Clean2048"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "clean2048.Clean2048"
+        attributes["Class-Path"] = configurations
+                .runtimeClasspath
+                .get()
+                .joinToString(separator = " ")
+    }
+}
 
 publishing {
     publications.create<MavenPublication>("maven") {

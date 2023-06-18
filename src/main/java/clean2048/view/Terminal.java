@@ -1,4 +1,4 @@
-package Game2048.view;
+package clean2048.view;
 
 import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
