@@ -29,6 +29,7 @@ version = "1.0-SNAPSHOT"
 description = "Clean2048"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+
 publishing {
     publications.create<MavenPublication>("maven") {
         from(components["java"])

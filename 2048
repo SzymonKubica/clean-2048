@@ -1,1 +1,1 @@
-java -jar /home/szymon/Projects/clean-2048/out/artifacts/Clean2048_jar/Clean2048.jar
+java -jar /home/szymon/Projects/clean-2048/build/libs/Clean2048-1.0-SNAPSHOT.jar

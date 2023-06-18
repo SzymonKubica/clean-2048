@@ -187,6 +187,6 @@ public class GameEngine {
   }
 
   public Tile[][] getGrid() {
-    return grid.clone();
+    return grid;
   }
 }
