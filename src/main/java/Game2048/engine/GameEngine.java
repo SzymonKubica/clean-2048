@@ -36,7 +36,7 @@ public class GameEngine {
     /* The shift will change state if it will cause a merge in that direction,
      * or if there is enough empty space so that tiles will change their position.
      * An important edge case is when we are trying to shift in say vertical direction and all
-     * columns are either empty or fully filled with unmergeable sequences of tiles.
+     * columns are either empty or fully filled with a non-merge-able sequences of tiles.
      * In this case, no tiles will move around and the state will not change.
      * Hence, we don't spawn a new tile because the user needs to shift in the perpendicular
      * direction.
@@ -49,14 +49,14 @@ public class GameEngine {
   private boolean isSpaceToMove(Direction direction) {
     if (direction.isVertical()) {
       return IntStream.range(0, dimension)
-          .anyMatch(i -> isShiftableSequence(getColumn(i, grid), direction));
+          .anyMatch(i -> canBeShifted(getColumn(i, grid), direction));
     } else {
-      return Arrays.stream(grid).anyMatch(row -> isShiftableSequence(row, direction));
+      return Arrays.stream(grid).anyMatch(row -> canBeShifted(row, direction));
     }
   }
 
-  private boolean isShiftableSequence(Tile[] sequence, Direction direction) {
-    /* A sequence is shiftable if it contains an empty tile followed by a non-empty tile which will
+  private boolean canBeShifted(Tile[] sequence, Direction direction) {
+    /* A sequence can be shifted if it contains an empty tile followed by a non-empty tile which will
      * occupy its place after the shift. We need to be able to identify such sequences of
      * tiles to be able to determine if a shift requested by the user will change the state of
      * the game grid, and thus we'll execute the shift and spawn a new tile.
@@ -93,7 +93,6 @@ public class GameEngine {
   private Tile[] merge(Tile[] row, Direction direction) {
     return (needsBackwardsMerging(direction)) ? reverse(mergeLeft(reverse(row))) : mergeLeft(row);
   }
-
 
   /* A direction requires 'backwards merging' when it is either DOWN or RIGHT.
    * The reason for that is that when you have a following row: [ _, 2, 2, 2 ]
