@@ -24,6 +24,10 @@ public class Tile {
     return new Tile(InitialTileValues.values()[seed].getValue());
   }
 
+  public static Tile merge(Tile tile1, Tile tile2) {
+    return new Tile(tile1.getValue() + tile2.getValue());
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
