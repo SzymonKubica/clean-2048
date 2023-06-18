@@ -6,6 +6,7 @@ import Game2048.controller.Direction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import lombok.Getter;
 
@@ -32,13 +33,14 @@ public class GameEngine {
   }
 
   private boolean shiftWillChangeState(Direction direction) {
-    // The shift will change state if it will cause a merge in that direction,
-    // or if there is enough empty space so that tiles will change their position.
-    // An important edge case is when we are trying to shift in say vertical direction and all
-    // columns are either empty or fully filled with unmergeable sequences of tiles.
-    // In this case, no tiles will move around and the state will not change.
-    // Hence, we don't spawn a new tile because the user needs to shift in the perpendicular
-    // direction.
+    /* The shift will change state if it will cause a merge in that direction,
+     * or if there is enough empty space so that tiles will change their position.
+     * An important edge case is when we are trying to shift in say vertical direction and all
+     * columns are either empty or fully filled with unmergeable sequences of tiles.
+     * In this case, no tiles will move around and the state will not change.
+     * Hence, we don't spawn a new tile because the user needs to shift in the perpendicular
+     * direction.
+     */
     boolean mergeWillOccur =
         (direction.isVertical()) ? verticalMergePossible() : horizontalMergePossible();
     return isSpaceToMove(direction) || mergeWillOccur;
@@ -54,29 +56,19 @@ public class GameEngine {
   }
 
   private boolean isShiftableSequence(Tile[] sequence, Direction direction) {
-    // A sequence is shiftable if it contains an empty tile followed by a non-empty tile which will
-    // occupy its place after the shift.
-    Tile[] sequenceCopy = sequence.clone();
-    if (needsBackwardsMerging(direction)) {
-      sequenceCopy = reverse(sequenceCopy);
-    }
-    for (int i = 0; i < sequenceCopy.length - 1; i++) {
-      if (sequenceCopy[i].isEmpty()) {
-        for (int j = i + 1; j < sequenceCopy.length; j++) {
-          if (!sequenceCopy[j].isEmpty()) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
+    /* A sequence is shiftable if it contains an empty tile followed by a non-empty tile which will
+     * occupy its place after the shift. We need to be able to identify such sequences of
+     * tiles to be able to determine if a shift requested by the user will change the state of
+     * the game grid, and thus we'll execute the shift and spawn a new tile.
+     */
+    Tile[] orientedSeq = (needsBackwardsMerging(direction)) ? reverse(sequence) : sequence;
+    return IntStream.range(0, sequence.length)
+        .anyMatch(i -> orientedSeq[i].isEmpty() && hasNonEmptySuccessor(i, orientedSeq));
   }
 
-  private void spawnTile() {
-    Tile newTile = Tile.generateRandomTile();
-    GridUtil.Position emptyCell = GridUtil.getRandomEmptyCell(grid);
-    grid[emptyCell.getY()][emptyCell.getX()] = newTile;
-    occupiedTiles++;
+  private boolean hasNonEmptySuccessor(int index, Tile[] sequence) {
+    Tile[] successors = Arrays.copyOfRange(sequence, index + 1, sequence.length);
+    return Arrays.stream(successors).anyMatch(Predicate.not(Tile::isEmpty));
   }
 
   public void shift(Direction direction) {
@@ -102,6 +94,16 @@ public class GameEngine {
     return (needsBackwardsMerging(direction)) ? reverse(mergeLeft(reverse(row))) : mergeLeft(row);
   }
 
+
+  /* A direction requires 'backwards merging' when it is either DOWN or RIGHT.
+   * The reason for that is that when you have a following row: [ _, 2, 2, 2 ]
+   * And you swipe to the right, then the expected merge result that you want to get
+   * is this: [ _, _, 2, 4 ]. However, if we were to use the default mergeLeft function,
+   * the output would be: [ 4, 2, _, _ ]. The same happens when you consider a column
+   * and try shifting downwards. In order to fix this, the row/column (in general 'sequence')
+   * needs to be reversed, and then we can perform the usual mergeLeft and after reversing
+   * again we will get the desired behaviour.
+   */
   private boolean needsBackwardsMerging(Direction direction) {
     return direction == Direction.DOWN || direction == Direction.RIGHT;
   }
@@ -122,18 +124,28 @@ public class GameEngine {
 
       if (current.equals(successor)) {
         nonEmptyTiles.remove(0);
-        merged.add(Tile.merge(current, successor));
+        Tile mergedTile = Tile.merge(current, successor);
+        merged.add(mergedTile);
+        score += mergedTile.getValue();
         occupiedTiles--;
       } else {
         merged.add(current);
       }
     }
 
-    // If there is space left in the row, we add empty tiles to it.
+    // If there is space left in the row, we need to add empty tiles to it.
     while (merged.size() < dimension) {
       merged.add(Tile.getEmptyTile());
     }
     return merged.toArray(Tile[]::new);
+  }
+
+  private void spawnTile() {
+    Tile newTile = Tile.generateRandomTile();
+    GridUtil.Position emptyCell = GridUtil.getRandomEmptyCell(grid);
+    grid[emptyCell.getY()][emptyCell.getX()] = newTile;
+    occupiedTiles++;
+    score += newTile.getValue();
   }
 
   public boolean isGameOver() {
@@ -157,6 +169,9 @@ public class GameEngine {
   }
 
   private boolean canBeMerged(Tile[] sequence) {
+    // A row/column can be merged if it contains two consecutive tiles of the same value
+    // those tiles might be separated by an empty tile, therefore we need to remove those
+    // before we perform the check.
     List<Tile> nonEmptyTiles =
         new ArrayList<>(Arrays.stream(sequence).filter(tile -> !tile.isEmpty()).toList());
 
