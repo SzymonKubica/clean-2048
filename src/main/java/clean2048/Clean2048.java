@@ -20,8 +20,9 @@ public class Clean2048 {
 
   public static void main(String[] args) {
     Terminal terminal = new LanternaTerminalAdapter();
-    GameEngine engine = new GameEngine(BOARD_DIMENSION);
-    GameView view = new TerminalGameView(terminal, BOARD_DIMENSION);
+    int boardDimension = getBoardDimensionFromCommandLine(args);
+    GameEngine engine = new GameEngine(boardDimension);
+    GameView view = new TerminalGameView(terminal, boardDimension);
     GameController controller = new TerminalGameController(terminal);
 
     Clean2048 game =
@@ -29,6 +30,15 @@ public class Clean2048 {
 
     game.run();
   }
+
+  private static int getBoardDimensionFromCommandLine(String[] args) {
+    try {
+      return (args.length == 2) ? Integer.parseInt(args[1]) : BOARD_DIMENSION;
+    } catch (NumberFormatException e) {
+      return BOARD_DIMENSION;
+    }
+  }
+
   private void run() {
     start();
     while (!engine.isGameOver()) {
