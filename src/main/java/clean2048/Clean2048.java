@@ -1,5 +1,6 @@
 package clean2048;
 
+import clean2048.controller.Direction;
 import clean2048.controller.GameController;
 import clean2048.controller.TerminalGameController;
 import clean2048.engine.GameEngine;
@@ -7,19 +8,33 @@ import clean2048.lib.lanterna.LanternaTerminalAdapter;
 import clean2048.view.GameView;
 import clean2048.view.Terminal;
 import clean2048.view.TerminalGameView;
+import java.util.Optional;
 import lombok.Builder;
 
 @Builder(setterPrefix = "with")
 public class Clean2048 {
+  private static final int BOARD_DIMENSION = 4;
   private final GameEngine engine;
   private final GameView view;
   private final GameController controller;
 
+  public static void main(String[] args) {
+    Terminal terminal = new LanternaTerminalAdapter();
+    GameEngine engine = new GameEngine(BOARD_DIMENSION);
+    GameView view = new TerminalGameView(terminal, BOARD_DIMENSION);
+    GameController controller = new TerminalGameController(terminal);
+
+    Clean2048 game =
+            Clean2048.builder().withEngine(engine).withView(view).withController(controller).build();
+
+    game.run();
+  }
   private void run() {
     start();
     while (!engine.isGameOver()) {
       updateDisplay();
-      engine.takeTurn(controller.getMove());
+      Optional<Direction> move = controller.getMove();
+      move.ifPresent(engine::takeTurn);
     }
     end();
   }
@@ -38,16 +53,4 @@ public class Clean2048 {
     view.printGameOverMessage();
   }
 
-  public static void main(String[] args) {
-    final int dimension = 6;
-    Terminal terminal = new LanternaTerminalAdapter();
-    GameEngine engine = new GameEngine(dimension);
-    GameView view = new TerminalGameView(terminal, dimension);
-    GameController controller = new TerminalGameController(terminal);
-
-    Clean2048 game =
-        Clean2048.builder().withEngine(engine).withView(view).withController(controller).build();
-
-    game.run();
-  }
 }

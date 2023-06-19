@@ -3,6 +3,7 @@ package clean2048.controller;
 import clean2048.view.Terminal;
 import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
+import java.util.Optional;
 
 public class TerminalGameController implements GameController {
   private final Terminal terminal;
@@ -12,7 +13,7 @@ public class TerminalGameController implements GameController {
   }
 
   @Override
-  public Direction getMove() {
+  public Optional<Direction> getMove() {
     KeyType key;
     try {
       key = terminal.getUserInput();
@@ -20,11 +21,12 @@ public class TerminalGameController implements GameController {
       throw new RuntimeException(e);
     }
     return switch (key) {
-      case ArrowLeft -> Direction.LEFT;
-      case ArrowUp -> Direction.UP;
-      case ArrowDown -> Direction.DOWN;
-      case ArrowRight -> Direction.RIGHT;
-      default -> throw new IllegalStateException("Unexpected value: " + key);
+      case ArrowLeft -> Optional.of(Direction.LEFT);
+      case ArrowUp -> Optional.of(Direction.UP);
+      case ArrowDown -> Optional.of(Direction.DOWN);
+      case ArrowRight -> Optional.of(Direction.RIGHT);
+      case Escape -> throw new RuntimeException();
+      default -> Optional.empty();
     };
   }
 }

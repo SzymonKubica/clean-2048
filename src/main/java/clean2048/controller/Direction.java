@@ -6,8 +6,4 @@ public enum Direction {
     public boolean isVertical() {
         return this == UP || this == DOWN;
     }
-
-    public boolean isHorizontal() {
-        return !isVertical();
-    }
 }
