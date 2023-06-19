@@ -7,6 +7,11 @@
 plugins {
     `java-library`
     `maven-publish`
+    id("io.ktor.plugin") version "2.3.1"
+}
+
+application {
+    mainClass.set("clean2048.Clean2048")
 }
 
 repositories {
@@ -16,6 +21,7 @@ repositories {
     }
 }
 
+
 dependencies {
     implementation("com.googlecode.lanterna:lanterna:3.1.1")
     implementation("org.projectlombok:lombok:1.18.26")
@@ -24,20 +30,17 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
 }
 
+ktor {
+    fatJar {
+        archiveFileName.set("2048.jar")
+    }
+}
+
 group = "groupId"
 version = "1.0-SNAPSHOT"
 description = "Clean2048"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-tasks.withType<Jar> {
-    manifest {
-        attributes["Main-Class"] = "clean2048.Clean2048"
-        attributes["Class-Path"] = configurations
-                .runtimeClasspath
-                .get()
-                .joinToString(separator = " ")
-    }
-}
 
 publishing {
     publications.create<MavenPublication>("maven") {
