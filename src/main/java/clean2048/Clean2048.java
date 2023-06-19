@@ -33,7 +33,7 @@ public class Clean2048 {
 
   private static int getBoardDimensionFromCommandLine(String[] args) {
     try {
-      return (args.length == 2) ? Integer.parseInt(args[1]) : BOARD_DIMENSION;
+      return (args.length == 1) ? Integer.parseInt(args[0]) : BOARD_DIMENSION;
     } catch (NumberFormatException e) {
       return BOARD_DIMENSION;
     }
