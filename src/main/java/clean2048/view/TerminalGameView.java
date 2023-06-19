@@ -1,11 +1,14 @@
 package clean2048.view;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class TerminalGameView implements GameView {
   private final Terminal backend;
+  private final int dimension;
 
   @Override
   public void updateDisplay(int score, int[][] grid) {
@@ -20,20 +23,29 @@ public class TerminalGameView implements GameView {
   }
 
   private void printScore(int score) throws IOException {
-    backend.printString("      Score: ", Color.GREY);
+    printCentered("Score: ", Color.GREY);
     backend.printLine(String.valueOf(score), Color.CYAN);
   }
 
   private void printGrid(int[][] grid) throws IOException {
-    backend.printLine(" -------------------");
+    String line = getHorizontalLine(grid.length);
+    backend.printLine(line);
     for (int[] row : grid) {
-      backend.printCharacter('|');
-      for (int tile : row) {
-        printTile(tile);
-        backend.printCharacter('|');
-      }
+      printRow(row);
       backend.printNewLine();
-      backend.printLine(" -------------------");
+      backend.printLine(line);
+    }
+  }
+
+  private String getHorizontalLine(int dimension) {
+    return " " + String.join("-", IntStream.range(0, dimension).mapToObj(i -> "----").toList());
+  }
+
+  private void printRow(int[] row) throws IOException {
+    backend.printCharacter('|');
+    for (int tile : row) {
+      printTile(tile);
+      backend.printCharacter('|');
     }
   }
 
@@ -42,10 +54,17 @@ public class TerminalGameView implements GameView {
     backend.printString(tileString, Color.getTileColor(tile));
   }
 
+  private void printCentered(String text, Color color) throws IOException {
+    int fullWidth = 5 * dimension + 1; // each cell is 4 units long and there are dimension + 1 separators between cells.
+    int leftMargin = ((fullWidth - text.length()) / 2);
+    String marginString = IntStream.range(0, leftMargin).mapToObj(i -> " ").collect(Collectors.joining(""));
+    backend.printString(marginString + text, color);
+  }
+
   @Override
   public void printGameOverMessage() {
     try {
-      backend.printLine("      Game Over!", Color.RED);
+      printCentered("Game Over!", Color.RED);
       backend.flushChanges();
     } catch (IOException e) {
       throw new RuntimeException(e);

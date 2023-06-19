@@ -39,9 +39,10 @@ public class Clean2048 {
   }
 
   public static void main(String[] args) {
+    final int dimension = 6;
     Terminal terminal = new LanternaTerminalAdapter();
-    GameEngine engine = new GameEngine(4);
-    GameView view = new TerminalGameView(terminal);
+    GameEngine engine = new GameEngine(dimension);
+    GameView view = new TerminalGameView(terminal, dimension);
     GameController controller = new TerminalGameController(terminal);
 
     Clean2048 game =

@@ -1,7 +1,6 @@
 package clean2048.engine;
 
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class GridUtil {
@@ -59,9 +58,5 @@ public class GridUtil {
     return reversed;
   }
 
-  @AllArgsConstructor
-  static class Position {
-    @Getter private final int x;
-    @Getter private final int y;
-  }
+  record Position(@Getter int x, @Getter int y) {}
 }

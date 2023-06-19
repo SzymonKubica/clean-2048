@@ -142,7 +142,7 @@ public class GameEngine {
   private void spawnTile() {
     Tile newTile = Tile.generateRandomTile();
     GridUtil.Position emptyCell = GridUtil.getRandomEmptyCell(grid);
-    grid[emptyCell.getY()][emptyCell.getX()] = newTile;
+    grid[emptyCell.y()][emptyCell.x()] = newTile;
     occupiedTiles++;
     score += newTile.getValue();
   }
