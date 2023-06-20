@@ -11,6 +11,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.TerminalFactory;
+import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
 
 public class LanternaTerminalAdapter implements Terminal {
@@ -99,5 +100,20 @@ public class LanternaTerminalAdapter implements Terminal {
   @Override
   public KeyType getUserInput() throws IOException {
     return terminal.readInput().getKeyType();
+  }
+
+  @Override
+  public int getTerminalWidth() throws IOException {
+    return terminal.getTerminalSize().getColumns();
+  }
+
+  @Override
+  public void addTerminalListener(TerminalResizeListener listener) {
+    terminal.addResizeListener(listener);
+  }
+
+  @Override
+  public void clear() throws IOException {
+    terminal.clearScreen();
   }
 }

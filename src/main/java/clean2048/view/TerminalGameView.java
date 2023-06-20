@@ -3,15 +3,39 @@ package clean2048.view;
 import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 public class TerminalGameView implements GameView {
   private final Terminal backend;
   private final int dimension;
+  private int terminalWidth;
+  private int score;
+  private int[][] grid;
+
+  public TerminalGameView(Terminal backend, int dimension) {
+    this.backend = backend;
+    this.dimension = dimension;
+    try {
+      this.terminalWidth = backend.getTerminalWidth();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    this.backend.addTerminalListener(
+        (terminal, terminalSize) -> {
+          try {
+            terminalWidth = terminal.getTerminalSize().getColumns();
+            terminal.clearScreen();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+          updateDisplay(score, grid);
+        });
+  }
 
   @Override
   public void updateDisplay(int score, int[][] grid) {
+    this.score = score;
+    this.grid = grid;
+
     try {
       backend.resetCursorPosition();
       printScore(score);
@@ -27,13 +51,18 @@ public class TerminalGameView implements GameView {
     backend.printLine(String.valueOf(score), Color.CYAN);
   }
 
+  private String getLeftMarginForCentering() {
+    return getPaddingString((terminalWidth - calculateGridWidth()) / 2);
+  }
+
   private void printGrid(int[][] grid) throws IOException {
+    String padding = getLeftMarginForCentering();
     String line = getHorizontalLine(grid.length);
-    backend.printLine(line);
+    backend.printLine(padding + line);
     for (int[] row : grid) {
       printRow(row);
       backend.printNewLine();
-      backend.printLine(line);
+      backend.printLine(padding + line);
     }
   }
 
@@ -42,6 +71,8 @@ public class TerminalGameView implements GameView {
   }
 
   private void printRow(int[] row) throws IOException {
+    String padding = getLeftMarginForCentering();
+    backend.printString(padding);
     backend.printCharacter('|');
     for (int tile : row) {
       printTile(tile);
@@ -55,10 +86,20 @@ public class TerminalGameView implements GameView {
   }
 
   private void printCentered(String text, Color color) throws IOException {
-    int fullWidth = 5 * dimension + 1; // each cell is 4 units long and there are dimension + 1 separators between cells.
+    String padding = getLeftMarginForCentering();
+    int fullWidth = calculateGridWidth();
     int leftMargin = ((fullWidth - text.length()) / 2);
-    String marginString = IntStream.range(0, leftMargin).mapToObj(i -> " ").collect(Collectors.joining(""));
-    backend.printString(marginString + text, color);
+    String marginString = getPaddingString(leftMargin);
+    backend.printString(padding + marginString + text, color);
+  }
+
+  private String getPaddingString(int length) {
+    return IntStream.range(0, length).mapToObj(i -> " ").collect(Collectors.joining(""));
+  }
+
+  private int calculateGridWidth() {
+    return 5 * dimension
+        + 1; // each cell is 4 units long and there are dimension + 1 separators between cells.
   }
 
   @Override
