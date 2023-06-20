@@ -32,7 +32,7 @@ public class Clean2048 {
     try {
       game.run();
     } catch (InterruptGameException e) {
-      System.out.println("Thank you for playing the game!");
+      view.printGameOverMessage();
     }
   }
 
