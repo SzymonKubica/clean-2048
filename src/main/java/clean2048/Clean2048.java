@@ -2,6 +2,7 @@ package clean2048;
 
 import clean2048.controller.Direction;
 import clean2048.controller.GameController;
+import clean2048.controller.InterruptGameException;
 import clean2048.controller.TerminalGameController;
 import clean2048.engine.GameEngine;
 import clean2048.lib.lanterna.LanternaTerminalAdapter;
@@ -28,7 +29,11 @@ public class Clean2048 {
     Clean2048 game =
             Clean2048.builder().withEngine(engine).withView(view).withController(controller).build();
 
-    game.run();
+    try {
+      game.run();
+    } catch (InterruptGameException e) {
+      System.out.println("Thank you for playing the game!");
+    }
   }
 
   private static int getBoardDimensionFromCommandLine(String[] args) {
@@ -39,7 +44,7 @@ public class Clean2048 {
     }
   }
 
-  private void run() {
+  private void run() throws InterruptGameException {
     start();
     while (!engine.isGameOver()) {
       updateDisplay();

@@ -108,6 +108,11 @@ public class LanternaTerminalAdapter implements Terminal {
   }
 
   @Override
+  public int getTerminalHeight() throws IOException {
+    return terminal.getTerminalSize().getRows();
+  }
+
+  @Override
   public void addTerminalListener(TerminalResizeListener listener) {
     terminal.addResizeListener(listener);
   }

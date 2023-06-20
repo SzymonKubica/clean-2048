@@ -26,7 +26,9 @@ public interface Terminal {
   KeyType getUserInput() throws IOException;
 
   int getTerminalWidth() throws IOException;
+  int getTerminalHeight() throws IOException;
   void addTerminalListener(TerminalResizeListener listener);
 
   void clear() throws IOException;
+
 }

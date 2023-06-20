@@ -13,7 +13,7 @@ public class TerminalGameController implements GameController {
   }
 
   @Override
-  public Optional<Direction> getMove() {
+  public Optional<Direction> getMove() throws InterruptGameException {
     KeyType key;
     try {
       key = terminal.getUserInput();
@@ -25,7 +25,7 @@ public class TerminalGameController implements GameController {
       case ArrowUp -> Optional.of(Direction.UP);
       case ArrowDown -> Optional.of(Direction.DOWN);
       case ArrowRight -> Optional.of(Direction.RIGHT);
-      case Escape -> throw new RuntimeException();
+      case Escape -> throw new InterruptGameException();
       default -> Optional.empty();
     };
   }

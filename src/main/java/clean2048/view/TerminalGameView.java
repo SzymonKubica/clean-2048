@@ -8,6 +8,7 @@ public class TerminalGameView implements GameView {
   private final Terminal backend;
   private final int dimension;
   private int terminalWidth;
+  private int terminalHeight;
   private int score;
   private int[][] grid;
 
@@ -16,6 +17,7 @@ public class TerminalGameView implements GameView {
     this.dimension = dimension;
     try {
       this.terminalWidth = backend.getTerminalWidth();
+      this.terminalHeight = backend.getTerminalHeight();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -23,6 +25,7 @@ public class TerminalGameView implements GameView {
         (terminal, terminalSize) -> {
           try {
             terminalWidth = terminal.getTerminalSize().getColumns();
+            terminalHeight = terminal.getTerminalSize().getRows();
             terminal.clearScreen();
           } catch (IOException e) {
             throw new RuntimeException(e);
@@ -38,6 +41,7 @@ public class TerminalGameView implements GameView {
 
     try {
       backend.resetCursorPosition();
+      printTopMargin(getTopMarginForCentering());
       printScore(score);
       printGrid(grid);
       backend.flushChanges();
@@ -53,6 +57,16 @@ public class TerminalGameView implements GameView {
 
   private String getLeftMarginForCentering() {
     return getPaddingString((terminalWidth - calculateGridWidth()) / 2);
+  }
+
+  private int getTopMarginForCentering() {
+    return (terminalHeight - calculateGridHeight()) / 2;
+  }
+
+  private void printTopMargin(int topMarginHeight) throws IOException {
+    for (int i = 0; i < topMarginHeight; i++) {
+      backend.printNewLine();
+    }
   }
 
   private void printGrid(int[][] grid) throws IOException {
@@ -102,9 +116,14 @@ public class TerminalGameView implements GameView {
         + 1; // each cell is 4 units long and there are dimension + 1 separators between cells.
   }
 
+  private int calculateGridHeight() {
+    return 2 * dimension + 1 + 1; // The additional +1 is for the score display
+  }
+
   @Override
   public void printGameOverMessage() {
     try {
+      printTopMargin(getTopMarginForCentering());
       printCentered("Game Over!", Color.RED);
       backend.flushChanges();
     } catch (IOException e) {
