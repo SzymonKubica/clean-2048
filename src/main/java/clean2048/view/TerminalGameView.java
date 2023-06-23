@@ -41,7 +41,7 @@ public class TerminalGameView implements GameView {
 
     try {
       backend.resetCursorPosition();
-      printTopMargin(getTopMarginForCentering());
+      centerVertically();
       printScore(score);
       printGrid(grid);
       backend.flushChanges();
@@ -55,29 +55,25 @@ public class TerminalGameView implements GameView {
     backend.printLine(String.valueOf(score), Color.CYAN);
   }
 
-  private String getLeftMarginForCentering() {
-    return getPaddingString((terminalWidth - calculateGridWidth()) / 2);
-  }
-
-  private int getTopMarginForCentering() {
-    return (terminalHeight - calculateGridHeight()) / 2;
-  }
-
-  private void printTopMargin(int topMarginHeight) throws IOException {
-    for (int i = 0; i < topMarginHeight; i++) {
+  private void centerVertically() throws IOException {
+    int topMargin = (terminalHeight - calculateGridHeight()) / 2;
+    for (int i = 0; i < topMargin; i++) {
       backend.printNewLine();
     }
   }
 
   private void printGrid(int[][] grid) throws IOException {
-    String padding = getLeftMarginForCentering();
     String line = getHorizontalLine(grid.length);
-    backend.printLine(padding + line);
+    printCentered(line);
     for (int[] row : grid) {
       printRow(row);
       backend.printNewLine();
-      backend.printLine(padding + line);
+      printCentered(line);
     }
+  }
+
+  private void printCentered(String line) throws IOException {
+    printCentered(line, Color.GREY);
   }
 
   private String getHorizontalLine(int dimension) {
@@ -85,7 +81,7 @@ public class TerminalGameView implements GameView {
   }
 
   private void printRow(int[] row) throws IOException {
-    String padding = getLeftMarginForCentering();
+    String padding = getGridMargin();
     backend.printString(padding);
     backend.printCharacter('|');
     for (int tile : row) {
@@ -94,17 +90,19 @@ public class TerminalGameView implements GameView {
     }
   }
 
+  private String getGridMargin() {
+    return getPaddingString((terminalWidth - calculateGridWidth()) / 2);
+  }
+
   private void printTile(int tile) throws IOException {
     String tileString = (tile == 0) ? "    " : String.format("%4s", tile);
     backend.printString(tileString, Color.getTileColor(tile));
   }
 
   private void printCentered(String text, Color color) throws IOException {
-    String padding = getLeftMarginForCentering();
-    int fullWidth = calculateGridWidth();
-    int leftMargin = ((fullWidth - text.length()) / 2);
-    String marginString = getPaddingString(leftMargin);
-    backend.printString(padding + marginString + text, color);
+    int leftMargin = ((terminalWidth - text.length()) / 2);
+    String padding = getPaddingString(leftMargin);
+    backend.printString(padding + text, color);
   }
 
   private String getPaddingString(int length) {
@@ -123,7 +121,7 @@ public class TerminalGameView implements GameView {
   @Override
   public void printGameOverMessage() {
     try {
-      printTopMargin(getTopMarginForCentering());
+      centerVertically();
       printCentered("Game Over!", Color.RED);
       backend.flushChanges();
     } catch (IOException e) {
