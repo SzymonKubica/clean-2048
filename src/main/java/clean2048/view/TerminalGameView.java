@@ -7,15 +7,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TerminalGameView implements GameView {
-  private final Terminal backend;
+  private final Terminal terminal;
   private final int dimension;
+
+  // We maintain the score and the latest copy of the grid as fields because the
+  // TerminalResizeListener needs them to be able to redraw the screen on resize without
+  // asking the engine for the latest state of the game board.
   private int score;
   private int[][] grid;
 
-  public TerminalGameView(Terminal backend, int dimension) {
-    this.backend = backend;
+  public TerminalGameView(Terminal terminal, int dimension) {
+    this.terminal = terminal;
     this.dimension = dimension;
-    this.backend.addResizeListener(new RedrawOnResizeHandler());
+    this.terminal.addResizeListener(new RedrawOnResizeHandler());
   }
 
   @Override
@@ -23,36 +27,35 @@ public class TerminalGameView implements GameView {
     this.score = score;
     this.grid = grid;
 
-
     try {
-      backend.resetCursorPosition();
+      terminal.resetCursorPosition();
       centerVertically();
-      printScore(score);
-      printGrid(grid);
-      backend.flushChanges();
+      printScore();
+      printGrid();
+      terminal.flushChanges();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private void centerVertically() throws IOException {
-    int topMargin = backend.getVerticalCenteringMargin(calculateGridHeight());
+    int topMargin = terminal.getVerticalCenteringMargin(calculateGridHeight());
     for (int i = 0; i < topMargin; i++) {
-      backend.printNewLine();
+      terminal.printNewLine();
     }
   }
 
-  private void printScore(int score) throws IOException {
-    backend.printStringCentered("Score: ");
-    backend.printLine(String.valueOf(score), Color.CYAN);
+  private void printScore() throws IOException {
+    terminal.printStringCentered("Score: ");
+    terminal.printLine(String.valueOf(score), Color.CYAN);
   }
 
-  private void printGrid(int[][] grid) throws IOException {
+  private void printGrid() throws IOException {
     String line = getHorizontalLine(grid.length);
-    backend.printLineCentered(line);
+    terminal.printLineCentered(line);
     for (int[] row : grid) {
       printRow(row);
-      backend.printLineCentered(line);
+      terminal.printLineCentered(line);
     }
   }
 
@@ -62,23 +65,23 @@ public class TerminalGameView implements GameView {
 
   private void printRow(int[] row) throws IOException {
     String margin =
-        IntStream.range(0, backend.getHorizontalCenteringMargin(calculateGridWidth()))
+        IntStream.range(0, terminal.getHorizontalCenteringMargin(calculateGridWidth()))
             .mapToObj(i -> " ")
             .collect(Collectors.joining(""));
 
-    backend.printString(margin);
-    backend.printCharacter('|');
+    terminal.printString(margin);
+    terminal.printCharacter('|');
     for (int tile : row) {
       printTile(tile);
-      backend.printCharacter('|');
+      terminal.printCharacter('|');
     }
-    backend.printNewLine();
+    terminal.printNewLine();
   }
 
   private void printTile(int tile) throws IOException {
     final String emptyCell = "    ";
     String tileString = (tile == 0) ? emptyCell : "%4s".formatted(tile);
-    backend.printString(tileString, Color.getTileColor(tile));
+    terminal.printString(tileString, Color.getTileColor(tile));
   }
 
   private int calculateGridWidth() {
@@ -97,8 +100,8 @@ public class TerminalGameView implements GameView {
   public void printGameOverMessage() {
     try {
       centerVertically();
-      backend.printLineCentered("Game Over!", Color.RED);
-      backend.flushChanges();
+      terminal.printLineCentered("Game Over!", Color.RED);
+      terminal.flushChanges();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
