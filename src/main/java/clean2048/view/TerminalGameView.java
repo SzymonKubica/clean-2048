@@ -1,5 +1,7 @@
 package clean2048.view;
 
+import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -7,37 +9,20 @@ import java.util.stream.IntStream;
 public class TerminalGameView implements GameView {
   private final Terminal backend;
   private final int dimension;
-  private int terminalWidth;
-  private int terminalHeight;
   private int score;
   private int[][] grid;
 
   public TerminalGameView(Terminal backend, int dimension) {
     this.backend = backend;
     this.dimension = dimension;
-    try {
-      this.terminalWidth = backend.getTerminalWidth();
-      this.terminalHeight = backend.getTerminalHeight();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    this.backend.addTerminalListener(
-        (terminal, terminalSize) -> {
-          try {
-            terminalWidth = terminal.getTerminalSize().getColumns();
-            terminalHeight = terminal.getTerminalSize().getRows();
-            terminal.clearScreen();
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
-          updateDisplay(score, grid);
-        });
+    this.backend.addResizeListener(new RedrawOnResizeHandler());
   }
 
   @Override
   public void updateDisplay(int score, int[][] grid) {
     this.score = score;
     this.grid = grid;
+
 
     try {
       backend.resetCursorPosition();
@@ -50,33 +35,25 @@ public class TerminalGameView implements GameView {
     }
   }
 
-  private void printScore(int score) throws IOException {
-    printCentered("Score: ", Color.GREY);
-    backend.printLine(String.valueOf(score), Color.CYAN);
-  }
-
   private void centerVertically() throws IOException {
-    int topMargin = (terminalHeight - calculateGridHeight()) / 2;
+    int topMargin = backend.getVerticalCenteringMargin(calculateGridHeight());
     for (int i = 0; i < topMargin; i++) {
       backend.printNewLine();
     }
   }
 
-  private void printGrid(int[][] grid) throws IOException {
-    String line = getHorizontalLine(grid.length);
-    printCenteredLine(line);
-    for (int[] row : grid) {
-      printRow(row);
-      backend.printNewLine();
-      printCenteredLine(line);
-    }
+  private void printScore(int score) throws IOException {
+    backend.printStringCentered("Score: ");
+    backend.printLine(String.valueOf(score), Color.CYAN);
   }
 
-  private void printCentered(String line) throws IOException {
-    printCentered(line, Color.GREY);
-  }
-  private void printCenteredLine(String line) throws IOException {
-    printCenteredLine(line, Color.GREY);
+  private void printGrid(int[][] grid) throws IOException {
+    String line = getHorizontalLine(grid.length);
+    backend.printLineCentered(line);
+    for (int[] row : grid) {
+      printRow(row);
+      backend.printLineCentered(line);
+    }
   }
 
   private String getHorizontalLine(int dimension) {
@@ -84,55 +61,63 @@ public class TerminalGameView implements GameView {
   }
 
   private void printRow(int[] row) throws IOException {
-    String margin = getCenteringMargin(calculateGridWidth());
+    String margin =
+        IntStream.range(0, backend.getHorizontalCenteringMargin(calculateGridWidth()))
+            .mapToObj(i -> " ")
+            .collect(Collectors.joining(""));
+
     backend.printString(margin);
     backend.printCharacter('|');
     for (int tile : row) {
       printTile(tile);
       backend.printCharacter('|');
     }
-  }
-
-  private String getCenteringMargin(int textLength) {
-    return getPaddingString((terminalWidth - textLength) / 2);
+    backend.printNewLine();
   }
 
   private void printTile(int tile) throws IOException {
-    String tileString = (tile == 0) ? "    " : String.format("%4s", tile);
+    final String emptyCell = "    ";
+    String tileString = (tile == 0) ? emptyCell : "%4s".formatted(tile);
     backend.printString(tileString, Color.getTileColor(tile));
   }
 
-  private void printCentered(String text, Color color) throws IOException {
-    String margin = getCenteringMargin(text.length());
-    backend.printString(margin + text, color);
-  }
-
-  private void printCenteredLine(String text, Color color) throws IOException {
-    String margin = getCenteringMargin(text.length());
-    backend.printLine(margin + text, color);
-  }
-
-  private String getPaddingString(int length) {
-    return IntStream.range(0, length).mapToObj(i -> " ").collect(Collectors.joining(""));
-  }
-
   private int calculateGridWidth() {
-    // each cell is 4 units long and there are dimension + 1 separators between cells.
-    return 5 * dimension + 1;
+    final int CELL_WIDTH = 4;
+    final int SEPARATOR_COUNT = dimension + 1;
+    return CELL_WIDTH * dimension + SEPARATOR_COUNT;
   }
 
   private int calculateGridHeight() {
-    return 2 * dimension + 1 + 1; // The additional +1 is for the score display
+    final int HORIZONTAL_BORDER_COUNT = dimension + 1;
+    final int PLAIN_TEXT_LINE_COUNT = 1; // for displaying the score
+    return dimension + HORIZONTAL_BORDER_COUNT + PLAIN_TEXT_LINE_COUNT;
   }
 
   @Override
   public void printGameOverMessage() {
     try {
       centerVertically();
-      printCentered("Game Over!", Color.RED);
+      backend.printLineCentered("Game Over!", Color.RED);
       backend.flushChanges();
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private class RedrawOnResizeHandler implements TerminalResizeListener {
+    @Override
+    public void onResized(com.googlecode.lanterna.terminal.Terminal terminal, TerminalSize terminalSize) {
+        try {
+          terminal.clearScreen();
+          if (!terminal.getCursorPosition().equals(0, 0)) {
+            // Prevents repeated updates without clearing the screen on application startup.
+            // The problem was that when starting up the grid would get printed two times and those
+            // left-overs wouldn't get cleared unless the user resized the window.
+            updateDisplay(score, grid);
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
     }
   }
 }

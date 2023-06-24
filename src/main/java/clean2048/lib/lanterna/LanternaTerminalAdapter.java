@@ -13,6 +13,8 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.TerminalFactory;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class LanternaTerminalAdapter implements Terminal {
   private final TerminalFactory defaultTerminalFactory;
@@ -26,6 +28,7 @@ public class LanternaTerminalAdapter implements Terminal {
   private void startDisplay() {
     try {
       terminal = defaultTerminalFactory.createTerminal();
+      terminal.setCursorVisible(false);
       terminal.clearScreen();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -93,6 +96,45 @@ public class LanternaTerminalAdapter implements Terminal {
   }
 
   @Override
+  public void printLineCentered(String line) throws IOException {
+    printLineCentered(line, GREY);
+  }
+
+  @Override
+  public void printLineCentered(String line, Color color) throws IOException {
+    String margin = getCenteringMargin(line.length());
+    printLine(margin + line, color);
+  }
+
+  @Override
+  public void printStringCentered(String string) throws IOException {
+    printStringCentered(string, GREY);
+  }
+
+  @Override
+  public void printStringCentered(String string, Color color) throws IOException {
+    String margin = getCenteringMargin(string.length());
+    printString(margin + string, color);
+  }
+
+  @Override
+  public int getHorizontalCenteringMargin(int textWidth) throws IOException {
+    return (getTerminalWidth() - textWidth) / 2;
+  }
+
+  @Override
+  public int getVerticalCenteringMargin(int textHeight) throws IOException {
+    return (getTerminalHeight() - textHeight) / 2;
+  }
+
+  private String getCenteringMargin(int textLength) throws IOException {
+    return getPaddingString((getTerminalWidth() - textLength) / 2);
+  }
+  private String getPaddingString(int length) {
+    return IntStream.range(0, length).mapToObj(i -> " ").collect(Collectors.joining(""));
+  }
+
+  @Override
   public void flushChanges() throws IOException {
     terminal.flush();
   }
@@ -113,12 +155,8 @@ public class LanternaTerminalAdapter implements Terminal {
   }
 
   @Override
-  public void addTerminalListener(TerminalResizeListener listener) {
+  public void addResizeListener(TerminalResizeListener listener) {
     terminal.addResizeListener(listener);
   }
 
-  @Override
-  public void clear() throws IOException {
-    terminal.clearScreen();
-  }
 }

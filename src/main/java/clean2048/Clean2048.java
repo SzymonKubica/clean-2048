@@ -56,7 +56,6 @@ public class Clean2048 {
 
   private void start() {
     engine.startGame();
-    updateDisplay();
   }
 
   private void updateDisplay() {

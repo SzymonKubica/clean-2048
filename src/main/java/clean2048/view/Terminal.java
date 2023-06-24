@@ -21,14 +21,23 @@ public interface Terminal {
 
   void printCharacter(char c, Color color) throws IOException;
 
+  void printLineCentered(String line) throws IOException;
+
+  void printLineCentered(String line, Color color) throws IOException;
+
+  void printStringCentered(String string) throws IOException;
+
+  void printStringCentered(String string, Color color) throws IOException;
+
+  int getHorizontalCenteringMargin(int textWidth) throws IOException;
+  int getVerticalCenteringMargin(int textHeight) throws IOException;
+
   void flushChanges() throws IOException;
 
   KeyType getUserInput() throws IOException;
 
   int getTerminalWidth() throws IOException;
   int getTerminalHeight() throws IOException;
-  void addTerminalListener(TerminalResizeListener listener);
-
-  void clear() throws IOException;
+  void addResizeListener(TerminalResizeListener listener);
 
 }
