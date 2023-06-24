@@ -64,25 +64,28 @@ public class TerminalGameView implements GameView {
 
   private void printGrid(int[][] grid) throws IOException {
     String line = getHorizontalLine(grid.length);
-    printCentered(line);
+    printCenteredLine(line);
     for (int[] row : grid) {
       printRow(row);
       backend.printNewLine();
-      printCentered(line);
+      printCenteredLine(line);
     }
   }
 
   private void printCentered(String line) throws IOException {
     printCentered(line, Color.GREY);
   }
+  private void printCenteredLine(String line) throws IOException {
+    printCenteredLine(line, Color.GREY);
+  }
 
   private String getHorizontalLine(int dimension) {
-    return " " + String.join("-", IntStream.range(0, dimension).mapToObj(i -> "----").toList());
+    return String.join("-", IntStream.range(0, dimension).mapToObj(i -> "----").toList());
   }
 
   private void printRow(int[] row) throws IOException {
-    String padding = getGridMargin();
-    backend.printString(padding);
+    String margin = getCenteringMargin(calculateGridWidth());
+    backend.printString(margin);
     backend.printCharacter('|');
     for (int tile : row) {
       printTile(tile);
@@ -90,8 +93,8 @@ public class TerminalGameView implements GameView {
     }
   }
 
-  private String getGridMargin() {
-    return getPaddingString((terminalWidth - calculateGridWidth()) / 2);
+  private String getCenteringMargin(int textLength) {
+    return getPaddingString((terminalWidth - textLength) / 2);
   }
 
   private void printTile(int tile) throws IOException {
@@ -100,9 +103,13 @@ public class TerminalGameView implements GameView {
   }
 
   private void printCentered(String text, Color color) throws IOException {
-    int leftMargin = ((terminalWidth - text.length()) / 2);
-    String padding = getPaddingString(leftMargin);
-    backend.printString(padding + text, color);
+    String margin = getCenteringMargin(text.length());
+    backend.printString(margin + text, color);
+  }
+
+  private void printCenteredLine(String text, Color color) throws IOException {
+    String margin = getCenteringMargin(text.length());
+    backend.printLine(margin + text, color);
   }
 
   private String getPaddingString(int length) {
@@ -110,8 +117,8 @@ public class TerminalGameView implements GameView {
   }
 
   private int calculateGridWidth() {
-    return 5 * dimension
-        + 1; // each cell is 4 units long and there are dimension + 1 separators between cells.
+    // each cell is 4 units long and there are dimension + 1 separators between cells.
+    return 5 * dimension + 1;
   }
 
   private int calculateGridHeight() {
