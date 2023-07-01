@@ -62,30 +62,110 @@ public class TerminalGameView implements GameView {
   @Override
   public void printLeaderBoard(Map<String, Integer> leaderboard) {
     try {
-      System.out.println(leaderboard);
-      int maxUsernameWidth =
+      final String PLACE = "Place";
+      final String USER_NAME = "User Name";
+      final String SCORE = "Score";
+
+      int maxPlaceIndexLength = String.valueOf(leaderboard.keySet().size()).length();
+      int placeColumnWidth = Math.max(PLACE.length(), maxPlaceIndexLength);
+
+      int maxUserNameLength =
           Collections.max(leaderboard.keySet().stream().map(String::length).toList());
-      int maxScoreWidth =
+      int userNameColumnWidth = Math.max(USER_NAME.length(), maxUserNameLength);
+
+      int maxScoreLength =
           Collections.max(
               leaderboard.values().stream().map(String::valueOf).map(String::length).toList());
+      int scoreColumnWidth = Math.max(SCORE.length(), maxScoreLength);
 
-      int maxCellWidth = Math.max(maxScoreWidth, maxUsernameWidth) + 1;
+      String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+      int BORDERS_WIDTH = 10;
 
-      String line = getSeparatorLine(2 * maxCellWidth + 7);
+      String line =
+          getSeparatorLine(
+              placeColumnWidth + userNameColumnWidth + scoreColumnWidth + BORDERS_WIDTH);
 
       terminal.resetCursorPosition();
       terminal.printLineCentered(line);
-      for (String user : leaderboard.keySet()) {
-        String leaderboardRow =
-            String.format(
-                "| %" + maxCellWidth + "s | %" + maxCellWidth + "s |", user, leaderboard.get(user));
+      List<String> keys = leaderboard.keySet().stream().toList();
+
+      String leaderboardHeader =
+          getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+      terminal.printLineCentered(leaderboardHeader);
+      terminal.printLineCentered(line);
+      for (int i = 0; i < keys.size(); i++) {
+        int place = i + 1;
+        String userName = keys.get(i);
+        int score = leaderboard.get(userName);
+        String leaderboardRow = rowTemplate.formatted(place, userName, score);
         terminal.printLineCentered(leaderboardRow);
       }
+
       terminal.printLineCentered(line);
       terminal.flushChanges();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public String getCenteredLeaderboardHeader(
+      int placeColumnWidth, int userNameColumnWidth, int scoreColumnWidth) {
+    final String PLACE = "Place";
+    final String USER_NAME = "User Name";
+    final String SCORE = "Score";
+    final String template = "| PLACE | USER_NAME | SCORE |";
+
+    int placeColumnMargin = (placeColumnWidth - PLACE.length()) / 2;
+    int userNameColumnMargin = (userNameColumnWidth - USER_NAME.length()) / 2;
+    int scoreColumnMargin = (scoreColumnWidth - SCORE.length()) / 2;
+
+    int placeColumnWithLeftMarginWidth = placeColumnMargin + PLACE.length();
+    int userNameColumnWithLeftMarginWidth = userNameColumnMargin + USER_NAME.length();
+    int scoreColumnWithLeftMarginWidth = scoreColumnMargin + SCORE.length();
+
+    String placeColumnRightPadding =
+            placeColumnMargin == 0
+                    ? "%s"
+                    : "%-" + (placeColumnMargin + placeColumnWithLeftMarginWidth - 2) + "s";
+    String userNameColumnRightPadding =
+            userNameColumnMargin == 0
+                    ? "%s"
+                    : "%-" + (userNameColumnMargin + userNameColumnWithLeftMarginWidth - 2) + "s";
+    String scoreColumnRightPadding =
+            scoreColumnMargin == 0
+                    ? "%s"
+                    : "%-" + (scoreColumnMargin + scoreColumnWithLeftMarginWidth - 2) + "s";
+
+    String placeColumnLeftPadding =
+        placeColumnMargin == 0 ? "%s" : "%" + (placeColumnMargin + placeColumnRightPadding.length()) + "s";
+    String userNameColumnLeftPadding =
+        userNameColumnMargin == 0 ? "%s" : "%" + (userNameColumnMargin + userNameColumnRightPadding.length()) + "s";
+    String scoreColumnLeftPadding =
+        scoreColumnMargin == 0 ? "%s" : "%" + (scoreColumnMargin + scoreColumnRightPadding.length()) + "s";
+
+    String rightPadded =
+        template
+            .replace("PLACE", placeColumnLeftPadding)
+            .replace("USER_NAME", userNameColumnLeftPadding)
+            .replace("SCORE", scoreColumnLeftPadding);
+    System.out.println(rightPadded);
+
+    String test = rightPadded.formatted("a", "b", "c");
+    System.out.println(test);
+    String centered =
+        rightPadded.formatted(
+            placeColumnRightPadding, userNameColumnRightPadding, scoreColumnRightPadding);
+    System.out.println(centered);
+    return centered.formatted(PLACE, USER_NAME, SCORE);
+  }
+
+  public String getRowTemplate(
+      int placeColumnWidth, int userNameColumnWidth, int scoreColumnWidth) {
+    final String template = "| Place | UserName | Score |";
+    return template
+        .replace("Place", "%" + placeColumnWidth + "s")
+        .replace("UserName", "%-" + userNameColumnWidth + "s")
+        .replace("Score", "%" + scoreColumnWidth + "s");
   }
 
   private void centerVertically() throws IOException {
