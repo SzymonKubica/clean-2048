@@ -20,6 +20,7 @@ public class Clean2048 {
   private final GameEngine engine;
   private final GameView view;
   private final GameController controller;
+  private final Leaderboard leaderboard;
 
   public static void main(String[] args) throws IOException {
     Terminal terminal = new LanternaTerminalAdapter();
@@ -27,20 +28,28 @@ public class Clean2048 {
     GameEngine engine = new GameEngine(boardDimension);
     GameView view = new TerminalGameView(terminal, boardDimension);
     GameController controller = new TerminalGameController(terminal);
+    Leaderboard leaderboard = new Leaderboard();
 
     Clean2048 game =
-            Clean2048.builder().withEngine(engine).withView(view).withController(controller).build();
-
-    Leaderboard leaderboard = new Leaderboard();
+        Clean2048.builder()
+            .withEngine(engine)
+            .withView(view)
+            .withController(controller)
+            .withLeaderboard(leaderboard)
+            .build();
 
     try {
       game.run();
     } catch (InterruptGameException e) {
       view.printGameOverMessage();
-      String userName = view.promptForUserName();
-      leaderboard.updateLeaderboard(userName, game.engine.getScore());
-      view.printLeaderBoard(leaderboard.readLeaderboard());
+      game.updateAndShowLeaderboard();
     }
+  }
+
+  private void updateAndShowLeaderboard() throws IOException {
+    String userName = view.promptForUserName();
+    leaderboard.updateLeaderboard(userName, engine.getScore());
+    view.printLeaderboard(leaderboard.readLeaderboard());
   }
 
   private static int getBoardDimensionFromCommandLine(String[] args) {
@@ -51,7 +60,7 @@ public class Clean2048 {
     }
   }
 
-  private void run() throws InterruptGameException {
+  private void run() throws InterruptGameException, IOException {
     start();
     while (!engine.isGameOver()) {
       updateDisplay();
@@ -69,9 +78,9 @@ public class Clean2048 {
     view.updateDisplay(engine.getScore(), engine.getSimplifiedGrid());
   }
 
-  private void end() {
+  private void end() throws IOException {
     updateDisplay();
     view.printGameOverMessage();
+    updateAndShowLeaderboard();
   }
-
 }

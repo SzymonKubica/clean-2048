@@ -8,7 +8,7 @@ public interface GameView {
   void updateDisplay(int Score, int[][] grid);
 
   String promptForUserName() throws IOException;
-  void printLeaderBoard(Map<String, Integer> leaderboard);
+  void printLeaderboard(Map<String, Integer> leaderboard);
 
   void printGameOverMessage();
 }

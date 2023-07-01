@@ -1,5 +1,6 @@
 package clean2048.view;
 
+import clean2048.user_data.UserScore;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class TerminalGameView implements GameView {
   }
 
   @Override
-  public void printLeaderBoard(Map<String, Integer> leaderboard) {
+  public void printLeaderboard(Map<String, Integer> leaderboard) {
     try {
       final String PLACE = "Place";
       final String USER_NAME = "User Name";
@@ -86,6 +87,7 @@ public class TerminalGameView implements GameView {
               placeColumnWidth + userNameColumnWidth + scoreColumnWidth + BORDERS_WIDTH);
 
       terminal.resetCursorPosition();
+      terminal.printLineCentered("Leaderboard");
       terminal.printLineCentered(line);
       List<String> keys = leaderboard.keySet().stream().toList();
 
@@ -93,11 +95,17 @@ public class TerminalGameView implements GameView {
           getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
       terminal.printLineCentered(leaderboardHeader);
       terminal.printLineCentered(line);
+
+      List<UserScore> scores =
+          new ArrayList<>(
+              keys.stream().map(user -> new UserScore(user, leaderboard.get(user))).toList());
+
+      Collections.sort(scores);
+
       for (int i = 0; i < keys.size(); i++) {
         int place = i + 1;
-        String userName = keys.get(i);
-        int score = leaderboard.get(userName);
-        String leaderboardRow = rowTemplate.formatted(place, userName, score);
+        UserScore score = scores.get(i);
+        String leaderboardRow = rowTemplate.formatted(place, score.userName, score.score);
         terminal.printLineCentered(leaderboardRow);
       }
 
@@ -140,7 +148,7 @@ public class TerminalGameView implements GameView {
 
   public String getRowTemplate(
       int placeColumnWidth, int userNameColumnWidth, int scoreColumnWidth) {
-    final String template = "| Place | UserName | Score |";
+    final String template = "| Place.| UserName | Score |";
     return template
         .replace("Place", "%" + placeColumnWidth + "s")
         .replace("UserName", "%-" + userNameColumnWidth + "s")
