@@ -10,8 +10,8 @@ public class TerminalGameView implements GameView {
   private final Terminal terminal;
   private final int dimension;
 
-  // We maintain the score and the latest copy of the grid as fields because the
-  // TerminalResizeListener needs them to be able to redraw the screen on resize without
+  // We maintain the score and the latest copy of the grid as fields because
+  // they are needed to redraw the screen on resize without
   // asking the engine for the latest state of the game board.
   private int score;
   private int[][] grid;
@@ -19,7 +19,7 @@ public class TerminalGameView implements GameView {
   public TerminalGameView(Terminal terminal, int dimension) {
     this.terminal = terminal;
     this.dimension = dimension;
-    this.terminal.addResizeListener(new RedrawOnResizeHandler());
+    this.terminal.addResizeListener(new RedrawOnResize());
   }
 
   @Override
@@ -107,20 +107,21 @@ public class TerminalGameView implements GameView {
     }
   }
 
-  private class RedrawOnResizeHandler implements TerminalResizeListener {
+  private class RedrawOnResize implements TerminalResizeListener {
     @Override
-    public void onResized(com.googlecode.lanterna.terminal.Terminal terminal, TerminalSize terminalSize) {
-        try {
-          terminal.clearScreen();
-          if (!terminal.getCursorPosition().equals(0, 0)) {
-            // Prevents repeated updates without clearing the screen on application startup.
-            // The problem was that when starting up the grid would get printed two times and those
-            // left-overs wouldn't get cleared unless the user resized the window.
-            updateDisplay(score, grid);
-          }
-        } catch (IOException e) {
-          throw new RuntimeException(e);
+    public void onResized(
+        com.googlecode.lanterna.terminal.Terminal terminal, TerminalSize terminalSize) {
+      try {
+        terminal.clearScreen();
+        if (!terminal.getCursorPosition().equals(0, 0)) {
+          // Prevents repeated updates without clearing the screen on application startup.
+          // The problem was that when starting up the grid would get printed two times and those
+          // left-overs wouldn't get cleared unless the user resized the window.
+          updateDisplay(score, grid);
         }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 }
