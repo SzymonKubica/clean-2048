@@ -6,9 +6,11 @@ import clean2048.controller.InterruptGameException;
 import clean2048.controller.TerminalGameController;
 import clean2048.engine.GameEngine;
 import clean2048.lib.lanterna.LanternaTerminalAdapter;
+import clean2048.user_data.Leaderboard;
 import clean2048.view.GameView;
 import clean2048.view.Terminal;
 import clean2048.view.TerminalGameView;
+import java.io.IOException;
 import java.util.Optional;
 import lombok.Builder;
 
@@ -19,7 +21,7 @@ public class Clean2048 {
   private final GameView view;
   private final GameController controller;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     Terminal terminal = new LanternaTerminalAdapter();
     int boardDimension = getBoardDimensionFromCommandLine(args);
     GameEngine engine = new GameEngine(boardDimension);
@@ -29,10 +31,15 @@ public class Clean2048 {
     Clean2048 game =
             Clean2048.builder().withEngine(engine).withView(view).withController(controller).build();
 
+    Leaderboard leaderboard = new Leaderboard();
+
     try {
       game.run();
     } catch (InterruptGameException e) {
       view.printGameOverMessage();
+      String userName = view.promptForUserName();
+      leaderboard.updateLeaderboard(userName, game.engine.getScore());
+      view.printLeaderBoard(leaderboard.readLeaderboard());
     }
   }
 

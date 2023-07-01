@@ -3,6 +3,10 @@ package clean2048.view;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,6 +42,52 @@ public class TerminalGameView implements GameView {
     }
   }
 
+  @Override
+  public String promptForUserName() throws IOException {
+    terminal.printStringCentered("Please enter your name: ");
+    char input = terminal.readCharacter();
+    List<Character> userInput = new ArrayList<>();
+    while (input != '\n') {
+      if (input == '\b') {
+        userInput.remove(userInput.size() - 1);
+        continue;
+      }
+      terminal.printCharacter(input);
+      userInput.add(input);
+      input = terminal.readCharacter();
+    }
+    return userInput.stream().map(String::valueOf).collect(Collectors.joining(""));
+  }
+
+  @Override
+  public void printLeaderBoard(Map<String, Integer> leaderboard) {
+    try {
+      System.out.println(leaderboard);
+      int maxUsernameWidth =
+          Collections.max(leaderboard.keySet().stream().map(String::length).toList());
+      int maxScoreWidth =
+          Collections.max(
+              leaderboard.values().stream().map(String::valueOf).map(String::length).toList());
+
+      int maxCellWidth = Math.max(maxScoreWidth, maxUsernameWidth) + 1;
+
+      String line = getSeparatorLine(2 * maxCellWidth + 7);
+
+      terminal.resetCursorPosition();
+      terminal.printLineCentered(line);
+      for (String user : leaderboard.keySet()) {
+        String leaderboardRow =
+            String.format(
+                "| %" + maxCellWidth + "s | %" + maxCellWidth + "s |", user, leaderboard.get(user));
+        terminal.printLineCentered(leaderboardRow);
+      }
+      terminal.printLineCentered(line);
+      terminal.flushChanges();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void centerVertically() throws IOException {
     int topMargin = terminal.getVerticalCenteringMargin(calculateGridHeight());
     for (int i = 0; i < topMargin; i++) {
@@ -61,6 +111,10 @@ public class TerminalGameView implements GameView {
 
   private String getHorizontalLine(int dimension) {
     return String.join("-", IntStream.range(0, dimension).mapToObj(i -> "----").toList());
+  }
+
+  private String getSeparatorLine(int length) {
+    return String.join("", IntStream.range(0, length).mapToObj(i -> "-").toList());
   }
 
   private void printRow(int[] row) throws IOException {
@@ -102,6 +156,7 @@ public class TerminalGameView implements GameView {
       centerVertically();
       terminal.printLineCentered("Game Over!", Color.RED);
       terminal.flushChanges();
+      terminal.setCursorVisible();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

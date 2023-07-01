@@ -25,6 +25,7 @@ repositories {
 dependencies {
     implementation("com.googlecode.lanterna:lanterna:3.1.1")
     implementation("org.projectlombok:lombok:1.18.26")
+    implementation("com.google.code.gson:gson:2.10.1")
     testImplementation("junit:junit:4.13.1")
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
