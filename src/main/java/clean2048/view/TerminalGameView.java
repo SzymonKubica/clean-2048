@@ -119,44 +119,23 @@ public class TerminalGameView implements GameView {
     int userNameColumnMargin = (userNameColumnWidth - USER_NAME.length()) / 2;
     int scoreColumnMargin = (scoreColumnWidth - SCORE.length()) / 2;
 
-    int placeColumnWithLeftMarginWidth = placeColumnMargin + PLACE.length();
-    int userNameColumnWithLeftMarginWidth = userNameColumnMargin + USER_NAME.length();
-    int scoreColumnWithLeftMarginWidth = scoreColumnMargin + SCORE.length();
+    String placeColumnPadding =
+        IntStream.range(0, placeColumnMargin).mapToObj(i -> " ").collect(Collectors.joining(""));
+    String userNameColumnPadding =
+        IntStream.range(0, userNameColumnMargin).mapToObj(i -> " ").collect(Collectors.joining(""));
+    String scoreColumnPadding =
+        IntStream.range(0, scoreColumnMargin).mapToObj(i -> " ").collect(Collectors.joining(""));
 
-    String placeColumnRightPadding =
-            placeColumnMargin == 0
-                    ? "%s"
-                    : "%-" + (placeColumnMargin + placeColumnWithLeftMarginWidth - 2) + "s";
-    String userNameColumnRightPadding =
-            userNameColumnMargin == 0
-                    ? "%s"
-                    : "%-" + (userNameColumnMargin + userNameColumnWithLeftMarginWidth - 2) + "s";
-    String scoreColumnRightPadding =
-            scoreColumnMargin == 0
-                    ? "%s"
-                    : "%-" + (scoreColumnMargin + scoreColumnWithLeftMarginWidth - 2) + "s";
-
-    String placeColumnLeftPadding =
-        placeColumnMargin == 0 ? "%s" : "%" + (placeColumnMargin + placeColumnRightPadding.length()) + "s";
-    String userNameColumnLeftPadding =
-        userNameColumnMargin == 0 ? "%s" : "%" + (userNameColumnMargin + userNameColumnRightPadding.length()) + "s";
-    String scoreColumnLeftPadding =
-        scoreColumnMargin == 0 ? "%s" : "%" + (scoreColumnMargin + scoreColumnRightPadding.length()) + "s";
-
-    String rightPadded =
+    String formattedTemplate =
         template
-            .replace("PLACE", placeColumnLeftPadding)
-            .replace("USER_NAME", userNameColumnLeftPadding)
-            .replace("SCORE", scoreColumnLeftPadding);
-    System.out.println(rightPadded);
+            .replace("PLACE", "%" + placeColumnWidth + "s")
+            .replace("USER_NAME", "%" + userNameColumnWidth + "s")
+            .replace("SCORE", "%" + scoreColumnWidth + "s");
 
-    String test = rightPadded.formatted("a", "b", "c");
-    System.out.println(test);
-    String centered =
-        rightPadded.formatted(
-            placeColumnRightPadding, userNameColumnRightPadding, scoreColumnRightPadding);
-    System.out.println(centered);
-    return centered.formatted(PLACE, USER_NAME, SCORE);
+    return formattedTemplate.formatted(
+        placeColumnPadding + PLACE + placeColumnPadding,
+        userNameColumnPadding + USER_NAME + userNameColumnPadding,
+        scoreColumnPadding + SCORE + scoreColumnPadding);
   }
 
   public String getRowTemplate(
