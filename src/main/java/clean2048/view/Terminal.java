@@ -35,9 +35,12 @@ public interface Terminal {
   void flushChanges() throws IOException;
 
   KeyType getUserInput() throws IOException;
+  Character readCharacter() throws IOException;
 
   int getTerminalWidth() throws IOException;
   int getTerminalHeight() throws IOException;
   void addResizeListener(TerminalResizeListener listener);
+
+  void setCursorVisible() throws IOException;
 
 }

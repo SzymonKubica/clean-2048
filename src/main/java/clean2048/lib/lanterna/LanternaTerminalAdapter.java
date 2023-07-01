@@ -130,6 +130,7 @@ public class LanternaTerminalAdapter implements Terminal {
   private String getCenteringMargin(int textLength) throws IOException {
     return getPaddingString((getTerminalWidth() - textLength) / 2);
   }
+
   private String getPaddingString(int length) {
     return IntStream.range(0, length).mapToObj(i -> " ").collect(Collectors.joining(""));
   }
@@ -142,6 +143,11 @@ public class LanternaTerminalAdapter implements Terminal {
   @Override
   public KeyType getUserInput() throws IOException {
     return terminal.readInput().getKeyType();
+  }
+
+  @Override
+  public Character readCharacter() throws IOException {
+    return terminal.readInput().getCharacter();
   }
 
   @Override
@@ -159,4 +165,8 @@ public class LanternaTerminalAdapter implements Terminal {
     terminal.addResizeListener(listener);
   }
 
+  @Override
+  public void setCursorVisible() throws IOException {
+    terminal.setCursorVisible(true);
+  }
 }
