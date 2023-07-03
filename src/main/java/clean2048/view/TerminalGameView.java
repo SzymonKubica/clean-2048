@@ -148,9 +148,9 @@ public class TerminalGameView implements GameView {
 
   public String getRowTemplate(
       int placeColumnWidth, int userNameColumnWidth, int scoreColumnWidth) {
-    final String template = "| Place.| UserName | Score |";
+    final String template = "| Place. | UserName | Score |";
     return template
-        .replace("Place", "%" + placeColumnWidth + "s")
+        .replace("Place", "%" + (placeColumnWidth - 1) + "s")
         .replace("UserName", "%-" + userNameColumnWidth + "s")
         .replace("Score", "%" + scoreColumnWidth + "s");
   }
