@@ -86,7 +86,6 @@ public class TerminalGameView implements GameView {
           getSeparatorLine(
               placeColumnWidth + userNameColumnWidth + scoreColumnWidth + BORDERS_WIDTH);
 
-      terminal.resetCursorPosition();
       terminal.printLineCentered("Leaderboard");
       terminal.printLineCentered(line);
       List<String> keys = leaderboard.keySet().stream().toList();
