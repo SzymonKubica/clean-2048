@@ -1,6 +1,6 @@
 package clean2048.view;
 
-import clean2048.user_data.UserScore;
+import clean2048.user_data.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
@@ -45,23 +45,48 @@ public class TerminalGameView implements GameView {
 
   @Override
   public String promptForUserName() throws IOException {
-    terminal.printStringCentered("Please enter your name: ");
+    return readInput("Please enter your user name: ", null);
+  }
+
+  @Override
+  public String promptForPassword() throws IOException {
+    return readInput("Enter your password: ", '*');
+  }
+
+  private String readInput(String promptMessage, Character feedbackChar) throws IOException {
+    terminal.printStringCentered(promptMessage);
     char input = terminal.readCharacter();
     List<Character> userInput = new ArrayList<>();
     while (input != '\n') {
-      if (input == '\b') {
-        userInput.remove(userInput.size() - 1);
+      if (userInput.isEmpty() && input == '\b') {
+        input = terminal.readCharacter();
         continue;
       }
-      terminal.printCharacter(input);
+      if (input == '\b') {
+        userInput.remove(userInput.size() - 1);
+        terminal.clearScreen();
+        updateDisplay(score, grid);
+        printGameOverMessage();
+        terminal.printStringCentered(promptMessage);
+        terminal.printString(
+            userInput.stream().map(String::valueOf).collect(Collectors.joining("")));
+        input = terminal.readCharacter();
+        continue;
+      }
+      if (feedbackChar != null) {
+        terminal.printCharacter(feedbackChar);
+      } else {
+        terminal.printCharacter(input);
+      }
       userInput.add(input);
       input = terminal.readCharacter();
     }
+    terminal.printLine("");
     return userInput.stream().map(String::valueOf).collect(Collectors.joining(""));
   }
 
   @Override
-  public void printLeaderboard(Map<String, Integer> leaderboard) {
+  public void printLeaderboard(Map<String, User> leaderboard) {
     try {
       final String PLACE = "Place";
       final String USER_NAME = "User Name";
@@ -76,7 +101,11 @@ public class TerminalGameView implements GameView {
 
       int maxScoreLength =
           Collections.max(
-              leaderboard.values().stream().map(String::valueOf).map(String::length).toList());
+              leaderboard.values().stream()
+                  .map(user -> user.highScore)
+                  .map(String::valueOf)
+                  .map(String::length)
+                  .toList());
       int scoreColumnWidth = Math.max(SCORE.length(), maxScoreLength);
 
       String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
@@ -86,6 +115,7 @@ public class TerminalGameView implements GameView {
           getSeparatorLine(
               placeColumnWidth + userNameColumnWidth + scoreColumnWidth + BORDERS_WIDTH);
 
+      terminal.printNewLine();
       terminal.printLineCentered("Leaderboard");
       terminal.printLineCentered(line);
       List<String> keys = leaderboard.keySet().stream().toList();
@@ -95,16 +125,14 @@ public class TerminalGameView implements GameView {
       terminal.printLineCentered(leaderboardHeader);
       terminal.printLineCentered(line);
 
-      List<UserScore> scores =
-          new ArrayList<>(
-              keys.stream().map(user -> new UserScore(user, leaderboard.get(user))).toList());
+      List<User> scores = new ArrayList<>(leaderboard.values().stream().toList());
 
       Collections.sort(scores);
 
       for (int i = 0; i < keys.size(); i++) {
         int place = i + 1;
-        UserScore score = scores.get(i);
-        String leaderboardRow = rowTemplate.formatted(place, score.userName, score.score);
+        User score = scores.get(i);
+        String leaderboardRow = rowTemplate.formatted(place, score.userName, score.highScore);
         terminal.printLineCentered(leaderboardRow);
       }
 
@@ -219,7 +247,7 @@ public class TerminalGameView implements GameView {
   @Override
   public void printGameOverMessage() {
     try {
-      centerVertically();
+      terminal.printLine("");
       terminal.printLineCentered("Game Over!", Color.RED);
       terminal.flushChanges();
       terminal.setCursorVisible();
