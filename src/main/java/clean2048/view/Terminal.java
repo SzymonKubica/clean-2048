@@ -43,4 +43,6 @@ public interface Terminal {
 
   void setCursorVisible() throws IOException;
 
+  void clearScreen() throws  IOException;
+
 }

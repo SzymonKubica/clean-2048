@@ -169,4 +169,10 @@ public class LanternaTerminalAdapter implements Terminal {
   public void setCursorVisible() throws IOException {
     terminal.setCursorVisible(true);
   }
+
+  @Override
+  public void clearScreen() throws IOException {
+    terminal.clearScreen();
+
+  }
 }
