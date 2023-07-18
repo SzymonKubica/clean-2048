@@ -7,7 +7,7 @@ import clean2048.controller.TerminalGameController;
 import clean2048.engine.GameEngine;
 import clean2048.lib.lanterna.LanternaTerminalAdapter;
 import clean2048.user_data.UserScoreStorage;
-import clean2048.view.GameView;
+import clean2048.view.EndGameAction;
 import clean2048.view.Terminal;
 import clean2048.view.TerminalGameView;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import lombok.Builder;
 public class Clean2048 {
   private static final int BOARD_DIMENSION = 4;
   private final GameEngine engine;
-  private final GameView view;
+  private final TerminalGameView view;
   private final GameController controller;
   private final UserScoreStorage userScoreStorage;
 
@@ -26,7 +26,7 @@ public class Clean2048 {
     Terminal terminal = new LanternaTerminalAdapter();
     int boardDimension = getBoardDimensionFromCommandLine(args);
     GameEngine engine = new GameEngine(boardDimension);
-    GameView view = new TerminalGameView(terminal, boardDimension);
+    TerminalGameView view = new TerminalGameView(terminal, boardDimension);
     GameController controller = new TerminalGameController(terminal);
     UserScoreStorage userScoreStorage = new UserScoreStorage();
 
@@ -42,7 +42,16 @@ public class Clean2048 {
       game.run();
     } catch (InterruptGameException e) {
       view.printGameOverMessage();
-      game.updateAndShowLeaderboard();
+      game.endGameMenu();
+    }
+  }
+
+  private void endGameMenu() throws IOException {
+    EndGameAction selectedAction = view.selectEndGameAction();
+    switch (selectedAction) {
+      case SAVE_SCORE -> updateAndShowLeaderboard();
+      case EXIT -> {}
+      case EDIT_LEADERBOARD -> view.editLeaderBoard();
     }
   }
 

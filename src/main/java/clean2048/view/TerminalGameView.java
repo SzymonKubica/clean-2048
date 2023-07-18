@@ -85,6 +85,25 @@ public class TerminalGameView implements GameView {
     return userInput.stream().map(String::valueOf).collect(Collectors.joining(""));
   }
 
+  public EndGameAction selectEndGameAction() throws IOException {
+    terminal.printLineCentered("Select what you want to do: ");
+    terminal.printLineCentered("Press q to exit");
+    terminal.printLineCentered("Press e to edit the leaderboard");
+    terminal.printLineCentered("Press s to save your score");
+
+    while (true) {
+      char input = terminal.readCharacter();
+      switch (input) {
+        case 'q':
+          return EndGameAction.EXIT;
+        case 'e':
+          return EndGameAction.EDIT_LEADERBOARD;
+        case 's':
+          return EndGameAction.SAVE_SCORE;
+      }
+    }
+  }
+
   @Override
   public void printLeaderboard(Map<String, User> leaderboard) {
     try {
@@ -254,6 +273,11 @@ public class TerminalGameView implements GameView {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void editLeaderBoard() throws IOException {
+    // TODO: implement editing the leaderboard
+    terminal.printLineCentered("Requested editing the leaderboard");
   }
 
   private class RedrawOnResize implements TerminalResizeListener {
