@@ -1,6 +1,7 @@
 package clean2048.view;
 
 import clean2048.user_data.User;
+import clean2048.user_data.UserScoreStorage;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
@@ -90,18 +91,17 @@ public class TerminalGameView implements GameView {
     terminal.printLineCentered("Press q to exit");
     terminal.printLineCentered("Press e to edit the leaderboard");
     terminal.printLineCentered("Press s to save your score");
+    return inputEndGameAction();
+  }
 
-    while (true) {
-      char input = terminal.readCharacter();
-      switch (input) {
-        case 'q':
-          return EndGameAction.EXIT;
-        case 'e':
-          return EndGameAction.EDIT_LEADERBOARD;
-        case 's':
-          return EndGameAction.SAVE_SCORE;
-      }
-    }
+  private EndGameAction inputEndGameAction() throws IOException {
+    char input = terminal.readCharacter();
+    return switch (input) {
+      case EndGameAction.QUIT_KEY -> EndGameAction.QUIT;
+      case EndGameAction.EDIT_LEADERBOARD_KEY -> EndGameAction.EDIT_LEADERBOARD;
+      case EndGameAction.SAVE_SCORE_KEY -> EndGameAction.SAVE_SCORE;
+      default -> inputEndGameAction();
+    };
   }
 
   @Override
@@ -276,8 +276,13 @@ public class TerminalGameView implements GameView {
   }
 
   public void editLeaderBoard() throws IOException {
-    // TODO: implement editing the leaderboard
-    terminal.printLineCentered("Requested editing the leaderboard");
+    terminal.resetCursorPosition();
+    terminal.clearScreen();
+    terminal.flushChanges();
+    terminal.printLineCentered("Editing the leaderboard.");
+    UserScoreStorage storage = new UserScoreStorage();
+    Map<String, User> leaderboard = storage.readUserData();
+    printLeaderboard(leaderboard);
   }
 
   private class RedrawOnResize implements TerminalResizeListener {

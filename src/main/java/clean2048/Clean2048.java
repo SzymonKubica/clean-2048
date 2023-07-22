@@ -50,7 +50,7 @@ public class Clean2048 {
     EndGameAction selectedAction = view.selectEndGameAction();
     switch (selectedAction) {
       case SAVE_SCORE -> updateAndShowLeaderboard();
-      case EXIT -> {}
+      case QUIT -> {}
       case EDIT_LEADERBOARD -> view.editLeaderBoard();
     }
   }
