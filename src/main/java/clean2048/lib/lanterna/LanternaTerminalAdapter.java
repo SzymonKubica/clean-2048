@@ -166,8 +166,8 @@ public class LanternaTerminalAdapter implements Terminal {
   }
 
   @Override
-  public void setCursorVisible() throws IOException {
-    terminal.setCursorVisible(true);
+  public void setCursorVisible(boolean isVisible) throws IOException {
+    terminal.setCursorVisible(isVisible);
   }
 
   @Override

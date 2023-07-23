@@ -3,6 +3,7 @@ package clean2048.view;
 import clean2048.user_data.User;
 import clean2048.user_data.UserScoreStorage;
 import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -156,7 +157,66 @@ public class TerminalGameView implements GameView {
       }
 
       terminal.printLineCentered(line);
-      terminal.flushChanges();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void printLeaderboardHighlightingRow(Map<String, User> leaderboard, int row) {
+    try {
+      final String PLACE = "Place";
+      final String USER_NAME = "User Name";
+      final String SCORE = "Score";
+
+      int maxPlaceIndexLength = String.valueOf(leaderboard.keySet().size()).length();
+      int placeColumnWidth = Math.max(PLACE.length(), maxPlaceIndexLength);
+
+      int maxUserNameLength =
+          Collections.max(leaderboard.keySet().stream().map(String::length).toList());
+      int userNameColumnWidth = Math.max(USER_NAME.length(), maxUserNameLength);
+
+      int maxScoreLength =
+          Collections.max(
+              leaderboard.values().stream()
+                  .map(user -> user.highScore)
+                  .map(String::valueOf)
+                  .map(String::length)
+                  .toList());
+      int scoreColumnWidth = Math.max(SCORE.length(), maxScoreLength);
+
+      String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+      int BORDERS_WIDTH = 10;
+
+      String line =
+          getSeparatorLine(
+              placeColumnWidth + userNameColumnWidth + scoreColumnWidth + BORDERS_WIDTH);
+
+      terminal.printNewLine();
+      terminal.printLineCentered("Leaderboard");
+      terminal.printLineCentered(line);
+      List<String> keys = leaderboard.keySet().stream().toList();
+
+      String leaderboardHeader =
+          getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+      terminal.printLineCentered(leaderboardHeader);
+      terminal.printLineCentered(line);
+
+      List<User> scores = new ArrayList<>(leaderboard.values().stream().toList());
+
+      Collections.sort(scores);
+
+      for (int i = 0; i < keys.size(); i++) {
+        int place = i + 1;
+        User score = scores.get(i);
+        String leaderboardRow = rowTemplate.formatted(place, score.userName, score.highScore);
+        if (i == row) {
+          terminal.printLineCentered(leaderboardRow, Color.CYAN);
+        } else {
+          terminal.printLineCentered(leaderboardRow);
+        }
+      }
+
+      terminal.printLineCentered(line);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -269,20 +329,40 @@ public class TerminalGameView implements GameView {
       terminal.printLine("");
       terminal.printLineCentered("Game Over!", Color.RED);
       terminal.flushChanges();
-      terminal.setCursorVisible();
+      terminal.setCursorVisible(true);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   public void editLeaderBoard() throws IOException {
-    terminal.resetCursorPosition();
-    terminal.clearScreen();
-    terminal.flushChanges();
-    terminal.printLineCentered("Editing the leaderboard.");
     UserScoreStorage storage = new UserScoreStorage();
     Map<String, User> leaderboard = storage.readUserData();
-    printLeaderboard(leaderboard);
+    terminal.setCursorVisible(false);
+    terminal.clearScreen();
+    terminal.flushChanges();
+    terminal.resetCursorPosition();
+    terminal.printLineCentered("Editing the leaderboard.");
+    terminal.printLineCentered("Use arrows to select the row to edit.");
+    terminal.printLineCentered("Press enter to confirm your selection.");
+    terminal.flushChanges();
+    printLeaderboardHighlightingRow(leaderboard, 0);
+    int selectedRow = 0;
+    KeyType input = null;
+    while (input != KeyType.Enter) {
+      input = terminal.getUserInput();
+      switch (input) {
+        case ArrowDown -> selectedRow = (selectedRow + 1) % leaderboard.size();
+        case ArrowUp -> selectedRow = (selectedRow - 1) % leaderboard.size();
+        default -> {}
+      }
+      terminal.resetCursorPosition();
+      terminal.printLineCentered("Editing the leaderboard.");
+      terminal.printLineCentered("Use arrows to select the row to edit.");
+      terminal.printLineCentered("Press enter to confirm your selection.");
+      terminal.flushChanges();
+      printLeaderboardHighlightingRow(leaderboard, selectedRow);
+    }
   }
 
   private class RedrawOnResize implements TerminalResizeListener {

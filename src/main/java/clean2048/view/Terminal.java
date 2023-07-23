@@ -41,7 +41,7 @@ public interface Terminal {
   int getTerminalHeight() throws IOException;
   void addResizeListener(TerminalResizeListener listener);
 
-  void setCursorVisible() throws IOException;
+  void setCursorVisible(boolean isVisible) throws IOException;
 
   void clearScreen() throws  IOException;
 
