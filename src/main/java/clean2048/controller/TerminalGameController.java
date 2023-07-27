@@ -1,14 +1,14 @@
 package clean2048.controller;
 
-import clean2048.view.Terminal;
+import clean2048.lib.lanterna.LanternaTerminal;
 import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
 import java.util.Optional;
 
 public class TerminalGameController implements GameController {
-  private final Terminal terminal;
+  private final LanternaTerminal terminal;
 
-  public TerminalGameController(Terminal terminal) {
+  public TerminalGameController(LanternaTerminal terminal) {
     this.terminal = terminal;
   }
 

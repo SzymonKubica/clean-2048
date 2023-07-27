@@ -5,10 +5,9 @@ import clean2048.controller.GameController;
 import clean2048.controller.InterruptGameException;
 import clean2048.controller.TerminalGameController;
 import clean2048.engine.GameEngine;
-import clean2048.lib.lanterna.LanternaTerminalAdapter;
+import clean2048.lib.lanterna.LanternaTerminal;
 import clean2048.user_data.UserScoreStorage;
 import clean2048.view.EndGameAction;
-import clean2048.view.Terminal;
 import clean2048.view.TerminalGameView;
 import java.io.IOException;
 import java.util.Optional;
@@ -23,7 +22,7 @@ public class Clean2048 {
   private final UserScoreStorage userScoreStorage;
 
   public static void main(String[] args) throws IOException {
-    Terminal terminal = new LanternaTerminalAdapter();
+    LanternaTerminal terminal = new LanternaTerminal();
     int boardDimension = getBoardDimensionFromCommandLine(args);
     GameEngine engine = new GameEngine(boardDimension);
     TerminalGameView view = new TerminalGameView(terminal, boardDimension);

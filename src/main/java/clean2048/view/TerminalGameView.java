@@ -1,5 +1,6 @@
 package clean2048.view;
 
+import clean2048.lib.lanterna.LanternaTerminal;
 import clean2048.user_data.User;
 import clean2048.user_data.UserScoreStorage;
 import com.googlecode.lanterna.TerminalSize;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TerminalGameView implements GameView {
-  private final Terminal terminal;
+  private final LanternaTerminal terminal;
   private final int dimension;
 
   // We maintain the score and the latest copy of the grid as fields because
@@ -23,7 +24,7 @@ public class TerminalGameView implements GameView {
   private int score;
   private int[][] grid;
 
-  public TerminalGameView(Terminal terminal, int dimension) {
+  public TerminalGameView(LanternaTerminal terminal, int dimension) {
     this.terminal = terminal;
     this.dimension = dimension;
     this.terminal.addResizeListener(new RedrawOnResize());
