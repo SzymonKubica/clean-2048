@@ -365,17 +365,11 @@ public class TerminalGameView implements GameView {
       selection = terminal.readCharacter();
     }
     switch (selection) {
-      case 'd' -> {
-        runDelete(selectedUser, leaderboard);
-      }
-      case 'e' -> {
-        runEditUsername(selectedUser, leaderboard);
-      }
-      case 'q' -> {
-        return;
-      }
+      case 'd' -> runDelete(selectedUser, leaderboard);
+      case 'e' -> runEditUsername(selectedUser, leaderboard);
+      case 'q' -> terminal.printLineCentered("Exited the editing mode.");
+      default -> throw new IllegalStateException("Unexpected value: " + selection);
     }
-    ;
   }
 
   private void runEditUsername(User selectedUser, Map<String, User> leaderboard)
