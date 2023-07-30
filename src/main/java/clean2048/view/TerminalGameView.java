@@ -7,10 +7,7 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -342,11 +339,7 @@ public class TerminalGameView implements GameView {
     terminal.setCursorVisible(false);
     terminal.clearScreen();
     terminal.flushChanges();
-    terminal.resetCursorPosition();
-    terminal.printLineCentered("Editing the leaderboard.");
-    terminal.printLineCentered("Use arrows to select the row to edit.");
-    terminal.printLineCentered("Press enter to confirm your selection.");
-    terminal.flushChanges();
+    printEditingLeaderboardGuide();
     printLeaderboardHighlightingRow(leaderboard, 0);
     int selectedRow = 0;
     KeyType input = null;
@@ -354,16 +347,81 @@ public class TerminalGameView implements GameView {
       input = terminal.getUserInput();
       switch (input) {
         case ArrowDown -> selectedRow = (selectedRow + 1) % leaderboard.size();
-        case ArrowUp -> selectedRow = (selectedRow - 1) % leaderboard.size();
+        case ArrowUp -> selectedRow = selectedRow == 0 ? leaderboard.size() - 1 : (selectedRow - 1);
         default -> {}
       }
-      terminal.resetCursorPosition();
-      terminal.printLineCentered("Editing the leaderboard.");
-      terminal.printLineCentered("Use arrows to select the row to edit.");
-      terminal.printLineCentered("Press enter to confirm your selection.");
-      terminal.flushChanges();
+      printEditingLeaderboardGuide();
       printLeaderboardHighlightingRow(leaderboard, selectedRow);
     }
+    List<User> scores = new ArrayList<>(leaderboard.values().stream().toList());
+    User selectedUser = scores.get(selectedRow);
+    terminal.printLineCentered("Editing the user: %s".formatted(selectedUser.userName));
+    terminal.printLineCentered("Select action:");
+    terminal.printLineCentered("d -> delete the user score");
+    terminal.printLineCentered("e -> edit the username");
+    terminal.printLineCentered("q -> quit the editing mode");
+    char selection = 'x';
+    while (selection != 'd' && selection != 'e' && selection != 'q') {
+      selection = terminal.readCharacter();
+    }
+    switch (selection) {
+      case 'd' -> {
+        runDelete(selectedUser, leaderboard);
+      }
+      case 'e' -> {
+        runEditUsername(selectedUser, leaderboard);
+      }
+      case 'q' -> {
+        return;
+      }
+    }
+    ;
+  }
+
+  private void runEditUsername(User selectedUser, Map<String, User> leaderboard)
+      throws IOException {
+    String password = promptForPassword();
+    if (!Objects.equals(password, selectedUser.password)) {
+      terminal.printLineCentered("Incorrect password! Please try again", Color.RED);
+      runEditUsername(selectedUser, leaderboard);
+      return;
+    }
+    String newUserName = promptForUserName();
+    while (leaderboard.containsKey(newUserName)) {
+      terminal.printLineCentered("Username: %s is already taken, please try another one.");
+      newUserName = promptForUserName();
+    }
+    leaderboard.remove(selectedUser.userName, selectedUser);
+    String oldUsername = selectedUser.userName;
+    selectedUser.userName = newUserName;
+    leaderboard.put(newUserName, selectedUser);
+    UserScoreStorage storage = new UserScoreStorage();
+    storage.writeUserData(leaderboard);
+    terminal.printLineCentered(
+        "Successfully renamed the user: %s to %s".formatted(oldUsername, selectedUser.userName));
+  }
+
+  private void runDelete(User selectedUser, Map<String, User> leaderboard) throws IOException {
+    String password = promptForPassword();
+    if (!Objects.equals(password, selectedUser.password)) {
+      terminal.printLineCentered("Incorrect password! Please try again", Color.RED);
+      runDelete(selectedUser, leaderboard);
+      return;
+    }
+
+    leaderboard.remove(selectedUser.userName, selectedUser);
+    UserScoreStorage storage = new UserScoreStorage();
+    storage.writeUserData(leaderboard);
+    terminal.printLineCentered(
+        "Successfully deleted the user: %s".formatted(selectedUser.userName));
+  }
+
+  private void printEditingLeaderboardGuide() throws IOException {
+    terminal.resetCursorPosition();
+    terminal.printLineCentered("Editing the leaderboard.");
+    terminal.printLineCentered("Use arrows to select the row to edit.");
+    terminal.printLineCentered("Press enter to confirm your selection.");
+    terminal.flushChanges();
   }
 
   private class RedrawOnResize implements TerminalResizeListener {
