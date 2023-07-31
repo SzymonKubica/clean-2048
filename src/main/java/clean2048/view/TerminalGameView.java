@@ -372,6 +372,14 @@ public class TerminalGameView implements GameView {
     }
   }
 
+  private void printEditingLeaderboardGuide() throws IOException {
+    terminal.resetCursorPosition();
+    terminal.printLineCentered("Editing the leaderboard.");
+    terminal.printLineCentered("Use arrows to select the row to edit.");
+    terminal.printLineCentered("Press enter to confirm your selection.");
+    terminal.flushChanges();
+  }
+
   private void runEditUsername(User selectedUser, Map<String, User> leaderboard)
       throws IOException {
     String password = promptForPassword();
@@ -408,14 +416,6 @@ public class TerminalGameView implements GameView {
     storage.writeUserData(leaderboard);
     terminal.printLineCentered(
         "Successfully deleted the user: %s".formatted(selectedUser.userName));
-  }
-
-  private void printEditingLeaderboardGuide() throws IOException {
-    terminal.resetCursorPosition();
-    terminal.printLineCentered("Editing the leaderboard.");
-    terminal.printLineCentered("Use arrows to select the row to edit.");
-    terminal.printLineCentered("Press enter to confirm your selection.");
-    terminal.flushChanges();
   }
 
   private class RedrawOnResize implements TerminalResizeListener {
