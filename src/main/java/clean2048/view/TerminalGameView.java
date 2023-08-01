@@ -361,14 +361,42 @@ public class TerminalGameView implements GameView {
     terminal.printLineCentered("e -> edit the username");
     terminal.printLineCentered("q -> quit the editing mode");
     char selection = 'x';
-    while (selection != 'd' && selection != 'e' && selection != 'q') {
+    while (selection != EditLeaderboardAction.DELETE.actionCharacter
+        && selection != EditLeaderboardAction.EDIT_USERNAME.actionCharacter
+        && selection != EditLeaderboardAction.QUIT.actionCharacter) {
       selection = terminal.readCharacter();
     }
-    switch (selection) {
-      case 'd' -> runDelete(selectedUser, leaderboard);
-      case 'e' -> runEditUsername(selectedUser, leaderboard);
-      case 'q' -> terminal.printLineCentered("Exited the editing mode.");
-      default -> throw new IllegalStateException("Unexpected value: " + selection);
+
+    EditLeaderboardAction action = EditLeaderboardAction.fromChar(selection);
+
+    switch (action) {
+      case DELETE -> runDelete(selectedUser, leaderboard);
+      case EDIT_USERNAME -> runEditUsername(selectedUser, leaderboard);
+      case QUIT -> terminal.printLineCentered("Exited the editing mode.");
+    }
+  }
+
+  private enum EditLeaderboardAction {
+    DELETE('d'),
+    EDIT_USERNAME('e'),
+    QUIT('q');
+
+    public static final char DELETE_CHAR = 'd';
+    public static final char EDIT_USERNAME_CHAR = 'e';
+    public static final char QUIT_CHAR = 'q';
+    public final char actionCharacter;
+
+    EditLeaderboardAction(char actionCharacter) {
+      this.actionCharacter = actionCharacter;
+    }
+
+    public static EditLeaderboardAction fromChar(char c) {
+      return switch (c) {
+        case DELETE_CHAR -> DELETE;
+        case EDIT_USERNAME_CHAR -> EDIT_USERNAME;
+        case QUIT_CHAR -> QUIT;
+        default -> throw new IllegalStateException("Unexpected value: " + c);
+      };
     }
   }
 
