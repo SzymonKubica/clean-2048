@@ -87,9 +87,11 @@ public class TerminalGameView implements GameView {
 
   public EndGameAction selectEndGameAction() throws IOException {
     terminal.printLineCentered("Select what you want to do: ");
-    terminal.printLineCentered("Press q to exit");
-    terminal.printLineCentered("Press e to edit the leaderboard");
-    terminal.printLineCentered("Press s to save your score");
+    terminal.printLineCentered("Press %s to exit".formatted(EndGameAction.QUIT_KEY));
+    terminal.printLineCentered(
+        "Press %s to edit the leaderboard".formatted(EndGameAction.EDIT_LEADERBOARD_KEY));
+    terminal.printLineCentered(
+        "Press %s to save your score".formatted(EndGameAction.SAVE_SCORE_KEY));
     return inputEndGameAction();
   }
 
@@ -357,9 +359,12 @@ public class TerminalGameView implements GameView {
     User selectedUser = scores.get(selectedRow);
     terminal.printLineCentered("Editing the user: %s".formatted(selectedUser.userName));
     terminal.printLineCentered("Select action:");
-    terminal.printLineCentered("d -> delete the user score");
-    terminal.printLineCentered("e -> edit the username");
-    terminal.printLineCentered("q -> quit the editing mode");
+    terminal.printLineCentered(
+        "%s -> delete the user score".formatted(EditLeaderboardAction.DELETE.actionCharacter));
+    terminal.printLineCentered(
+        "%s -> edit the username".formatted(EditLeaderboardAction.EDIT_USERNAME.actionCharacter));
+    terminal.printLineCentered(
+        "%s -> quit the editing mode".formatted(EditLeaderboardAction.QUIT.actionCharacter));
     char selection = 'x';
     while (selection != EditLeaderboardAction.DELETE.actionCharacter
         && selection != EditLeaderboardAction.EDIT_USERNAME.actionCharacter
