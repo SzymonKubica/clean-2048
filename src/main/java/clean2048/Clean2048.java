@@ -1,13 +1,13 @@
 package clean2048;
 
 import clean2048.controller.Direction;
-import clean2048.controller.GameController;
 import clean2048.controller.InterruptGameException;
 import clean2048.controller.TerminalGameController;
 import clean2048.engine.GameEngine;
 import clean2048.lib.lanterna.LanternaTerminal;
 import clean2048.user_data.UserScoreStorage;
 import clean2048.view.EndGameAction;
+import clean2048.view.LeaderboardView;
 import clean2048.view.TerminalGameView;
 import java.io.IOException;
 import java.util.Optional;
@@ -18,15 +18,17 @@ public class Clean2048 {
   private static final int BOARD_DIMENSION = 4;
   private final GameEngine engine;
   private final TerminalGameView view;
-  private final GameController controller;
+  private final TerminalGameController controller;
   private final UserScoreStorage userScoreStorage;
+  private final LeaderboardView leaderboardView;
 
   public static void main(String[] args) throws IOException {
     LanternaTerminal terminal = new LanternaTerminal();
     int boardDimension = getBoardDimensionFromCommandLine(args);
     GameEngine engine = new GameEngine(boardDimension);
-    TerminalGameView view = new TerminalGameView(terminal, boardDimension);
-    GameController controller = new TerminalGameController(terminal);
+    LeaderboardView leaderboardView = new LeaderboardView(terminal);
+    TerminalGameView view = new TerminalGameView(terminal, leaderboardView, boardDimension);
+    TerminalGameController controller = new TerminalGameController(terminal);
     UserScoreStorage userScoreStorage = new UserScoreStorage();
 
     Clean2048 game =
@@ -35,6 +37,7 @@ public class Clean2048 {
             .withView(view)
             .withController(controller)
             .withUserScoreStorage(userScoreStorage)
+                .withLeaderboardView(leaderboardView)
             .build();
 
     try {
@@ -60,7 +63,7 @@ public class Clean2048 {
     if (userScoreStorage.verifyUser(userName, password)) {
       userScoreStorage.updateLeaderboard(userName, password, engine.getScore());
     }
-    view.printLeaderboard(userScoreStorage.readUserData());
+    leaderboardView.printLeaderboard(userScoreStorage.readUserData());
   }
 
   private static int getBoardDimensionFromCommandLine(String[] args) {

@@ -5,14 +5,13 @@ import com.googlecode.lanterna.input.KeyType;
 import java.io.IOException;
 import java.util.Optional;
 
-public class TerminalGameController implements GameController {
+public class TerminalGameController {
   private final LanternaTerminal terminal;
 
   public TerminalGameController(LanternaTerminal terminal) {
     this.terminal = terminal;
   }
 
-  @Override
   public Optional<Direction> getMove() throws InterruptGameException {
     KeyType key;
     try {
