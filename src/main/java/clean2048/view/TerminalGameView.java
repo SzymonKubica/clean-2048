@@ -45,45 +45,6 @@ public class TerminalGameView {
     }
   }
 
-  public String promptForUserName() throws IOException {
-    return readInput("Please enter your user name: ", null);
-  }
-
-  public String promptForPassword() throws IOException {
-    return readInput("Enter your password: ", '*');
-  }
-
-  private String readInput(String promptMessage, Character feedbackChar) throws IOException {
-    terminal.printStringCentered(promptMessage);
-    char input = terminal.readCharacter();
-    List<Character> userInput = new ArrayList<>();
-    while (input != '\n') {
-      if (userInput.isEmpty() && input == '\b') {
-        input = terminal.readCharacter();
-        continue;
-      }
-      if (input == '\b') {
-        userInput.remove(userInput.size() - 1);
-        terminal.clearScreen();
-        updateDisplay(score, grid);
-        printGameOverMessage();
-        terminal.printStringCentered(promptMessage);
-        terminal.printString(
-            userInput.stream().map(String::valueOf).collect(Collectors.joining("")));
-        input = terminal.readCharacter();
-        continue;
-      }
-      if (feedbackChar != null) {
-        terminal.printCharacter(feedbackChar);
-      } else {
-        terminal.printCharacter(input);
-      }
-      userInput.add(input);
-      input = terminal.readCharacter();
-    }
-    terminal.printLine("");
-    return userInput.stream().map(String::valueOf).collect(Collectors.joining(""));
-  }
 
   public EndGameAction selectEndGameAction() throws IOException {
     terminal.printLineCentered("Select what you want to do: ");
@@ -181,7 +142,7 @@ public class TerminalGameView {
     terminal.clearScreen();
     terminal.flushChanges();
     printEditingLeaderboardGuide();
-    leaderboardView.printLeaderboardHighlightingRow(leaderboard, 0);
+    leaderboardView.printLeaderboardHighlightingRow(leaderboard, 0, Color.CYAN);
     int selectedRow = 0;
     KeyType input = null;
     while (input != KeyType.Enter) {
@@ -192,7 +153,7 @@ public class TerminalGameView {
         default -> {}
       }
       printEditingLeaderboardGuide();
-      leaderboardView.printLeaderboardHighlightingRow(leaderboard, selectedRow);
+      leaderboardView.printLeaderboardHighlightingRow(leaderboard, selectedRow, Color.CYAN);
     }
     List<User> scores = new ArrayList<>(leaderboard.values().stream().toList());
     User selectedUser = scores.get(selectedRow);
