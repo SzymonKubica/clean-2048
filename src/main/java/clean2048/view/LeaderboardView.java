@@ -18,6 +18,48 @@ public class LeaderboardView {
   }
 
   public void printLeaderboard(Map<String, User> leaderboard) {
+    LeaderboardContents contents = assembleLeaderboardContents(leaderboard);
+    try {
+      printLeaderboardHeader(contents.leaderBoardHeader, contents.separatorLine);
+      for (String scoreRow : contents.scoreRows) {
+        terminal.printLineCentered(scoreRow);
+      }
+      terminal.printLineCentered(contents.separatorLine);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void printLeaderboardHighlightingRow(
+      Map<String, User> leaderboard, int highlightedRow, Color color) {
+    LeaderboardContents contents = assembleLeaderboardContents(leaderboard);
+    try {
+      printLeaderboardHeader(contents.leaderBoardHeader, contents.separatorLine);
+      for (int i = 0; i < contents.scoreRows.size(); i++) {
+        String scoreRow = contents.scoreRows.get(i);
+        if (i == highlightedRow) {
+          terminal.printLineCentered(scoreRow, color);
+        } else {
+          terminal.printLineCentered(scoreRow);
+        }
+      }
+      terminal.printLineCentered(contents.separatorLine);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void printLeaderboardHeader(String leaderboardHeader, String separatorLine)
+          throws IOException {
+    terminal.printNewLine();
+    terminal.printLineCentered("Leaderboard");
+    terminal.printLineCentered(separatorLine);
+    terminal.printLineCentered(leaderboardHeader);
+    terminal.printLineCentered(separatorLine);
+  }
+
+
+  private LeaderboardContents assembleLeaderboardContents(Map<String, User> leaderboard) {
     List<String> places =
         IntStream.rangeClosed(1, leaderboard.size()).mapToObj(Integer::toString).toList();
     List<String> scores =
@@ -42,79 +84,12 @@ public class LeaderboardView {
                     rowTemplate.formatted(users.indexOf(user) + 1, user.userName, user.highScore))
             .toList();
 
-    try {
-      terminal.printNewLine();
-      terminal.printLineCentered("Leaderboard");
-      terminal.printLineCentered(separatorLine);
-      terminal.printLineCentered(leaderboardHeader);
-      terminal.printLineCentered(separatorLine);
-      for (String scoreRow : scoreRows) {
-        terminal.printLineCentered(scoreRow);
-      }
-      terminal.printLineCentered(separatorLine);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return new LeaderboardContents(leaderboardHeader, separatorLine, scoreRows);
   }
 
   private int getColumnWidth(String columnHeader, Collection<String> columnContents) {
     int maxEntryWidth = Collections.max(columnContents.stream().map(String::length).toList());
     return Math.max(columnHeader.length(), maxEntryWidth);
-  }
-
-  public void printLeaderboardHighlightingRow(Map<String, User> leaderboard, int row) {
-    try {
-      final String PLACE = "Place";
-      final String USER_NAME = "User Name";
-      final String SCORE = "Score";
-
-      int maxPlaceIndexLength = String.valueOf(leaderboard.keySet().size()).length();
-      int placeColumnWidth = Math.max(PLACE.length(), maxPlaceIndexLength);
-
-      int maxUserNameLength =
-          Collections.max(leaderboard.keySet().stream().map(String::length).toList());
-      int userNameColumnWidth = Math.max(USER_NAME.length(), maxUserNameLength);
-
-      int maxScoreLength =
-          Collections.max(
-              leaderboard.values().stream()
-                  .map(user -> user.highScore)
-                  .map(String::valueOf)
-                  .map(String::length)
-                  .toList());
-      int scoreColumnWidth = Math.max(SCORE.length(), maxScoreLength);
-
-      String leaderboardHeader =
-          getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
-      String line = getSeparatorLine(leaderboardHeader.length());
-      String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
-
-      terminal.printNewLine();
-      terminal.printLineCentered("Leaderboard");
-      terminal.printLineCentered(line);
-
-      terminal.printLineCentered(leaderboardHeader);
-      terminal.printLineCentered(line);
-
-      List<User> scores = new ArrayList<>(leaderboard.values().stream().toList());
-
-      Collections.sort(scores);
-
-      for (int i = 0; i < leaderboard.keySet().size(); i++) {
-        int place = i + 1;
-        User score = scores.get(i);
-        String leaderboardRow = rowTemplate.formatted(place, score.userName, score.highScore);
-        if (i == row) {
-          terminal.printLineCentered(leaderboardRow, Color.CYAN);
-        } else {
-          terminal.printLineCentered(leaderboardRow);
-        }
-      }
-
-      terminal.printLineCentered(line);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   public String getRowTemplate(
@@ -170,4 +145,7 @@ public class LeaderboardView {
   private int getCenterPaddingWidth(String s, int columnWidth) {
     return (columnWidth - s.length()) / 2;
   }
+
+  private record LeaderboardContents(
+      String leaderBoardHeader, String separatorLine, List<String> scoreRows) {}
 }
