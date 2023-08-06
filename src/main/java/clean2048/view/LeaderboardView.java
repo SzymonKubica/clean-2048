@@ -17,55 +17,49 @@ public class LeaderboardView {
     this.terminal = terminal;
   }
 
-  private int getColumnWidth(String columnHeader, Collection<String> columnContents) {
-    int maxEntryWidth = Collections.max(columnContents.stream().map(String::length).toList());
-    return Math.max(columnHeader.length(), maxEntryWidth);
-  }
-
   public void printLeaderboard(Map<String, User> leaderboard) {
+    List<String> places =
+        IntStream.rangeClosed(1, leaderboard.size()).mapToObj(Integer::toString).toList();
+    List<String> scores =
+        leaderboard.values().stream().map(user -> user.highScore).map(Object::toString).toList();
+
+    int placeColumnWidth = getColumnWidth(PLACE, places);
+    int userNameColumnWidth = getColumnWidth(USER_NAME, leaderboard.keySet());
+    int scoreColumnWidth = getColumnWidth(SCORE, scores);
+
+    String leaderboardHeader =
+        getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+
+    String separatorLine = getSeparatorLine(leaderboardHeader.length());
+
+    String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+    List<User> users = new ArrayList<>(leaderboard.values().stream().toList());
+    Collections.sort(users);
+    List<String> scoreRows =
+        users.stream()
+            .map(
+                user ->
+                    rowTemplate.formatted(users.indexOf(user) + 1, user.userName, user.highScore))
+            .toList();
+
     try {
-
-      List<String> places =
-          IntStream.rangeClosed(1, leaderboard.size()).mapToObj(Integer::toString).toList();
-      List<String> scores =
-          leaderboard.values().stream().map(user -> user.highScore).map(Object::toString).toList();
-
-      int placeColumnWidth = getColumnWidth(PLACE, places);
-      int userNameColumnWidth = getColumnWidth(USER_NAME, leaderboard.keySet());
-      int scoreColumnWidth = getColumnWidth(SCORE, scores);
-
-      String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
-      int BORDERS_WIDTH = 10;
-
-      String line =
-          getSeparatorLine(
-              placeColumnWidth + userNameColumnWidth + scoreColumnWidth + BORDERS_WIDTH);
-
       terminal.printNewLine();
       terminal.printLineCentered("Leaderboard");
-      terminal.printLineCentered(line);
-      List<String> keys = leaderboard.keySet().stream().toList();
-
-      String leaderboardHeader =
-          getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+      terminal.printLineCentered(separatorLine);
       terminal.printLineCentered(leaderboardHeader);
-      terminal.printLineCentered(line);
-
-      List<User> users = new ArrayList<>(leaderboard.values().stream().toList());
-
-      Collections.sort(users);
-
-      for (int i = 0; i < keys.size(); i++) {
-        int place = i + 1;
-        User score = users.get(i);
-        String leaderboardRow = rowTemplate.formatted(place, score.userName, score.highScore);
-        terminal.printLineCentered(leaderboardRow);
+      terminal.printLineCentered(separatorLine);
+      for (String scoreRow : scoreRows) {
+        terminal.printLineCentered(scoreRow);
       }
-
-      terminal.printLineCentered(line);
+      terminal.printLineCentered(separatorLine);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private int getColumnWidth(String columnHeader, Collection<String> columnContents) {
+    int maxEntryWidth = Collections.max(columnContents.stream().map(String::length).toList());
+    return Math.max(columnHeader.length(), maxEntryWidth);
   }
 
   public void printLeaderboardHighlightingRow(Map<String, User> leaderboard, int row) {
@@ -90,9 +84,8 @@ public class LeaderboardView {
                   .toList());
       int scoreColumnWidth = Math.max(SCORE.length(), maxScoreLength);
 
-
       String leaderboardHeader =
-              getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
+          getCenteredLeaderboardHeader(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
       String line = getSeparatorLine(leaderboardHeader.length());
       String rowTemplate = getRowTemplate(placeColumnWidth, userNameColumnWidth, scoreColumnWidth);
 
