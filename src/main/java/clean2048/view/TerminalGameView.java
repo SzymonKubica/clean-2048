@@ -45,7 +45,6 @@ public class TerminalGameView {
     }
   }
 
-
   public EndGameAction selectEndGameAction() throws IOException {
     terminal.printLineCentered("Select what you want to do: ");
     terminal.printLineCentered("Press %s to exit".formatted(EndGameAction.QUIT_KEY));

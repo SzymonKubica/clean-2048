@@ -18,8 +18,9 @@ public class LoginView {
     private final LanternaTerminal terminal;
     private final Map<String, User> existingUsers;
 
-    public LoginView(LanternaTerminal terminal) {
+    public LoginView(LanternaTerminal terminal, Map<String, User> existingUsers) {
         this.terminal = terminal;
+        this.existingUsers = existingUsers;
     }
 
     public Optional<User> login() throws IOException {
@@ -60,35 +61,44 @@ public class LoginView {
     }
 
     private String readInput(String promptMessage, Character feedbackChar) throws IOException {
+        terminal.clearScreen();
         terminal.printStringCentered(promptMessage);
         char input = terminal.readCharacter();
-        List<Character> userInput = new ArrayList<>();
-        while (input != '\n') {
-            if (userInput.isEmpty() && input == '\b') {
+        List<Character> inputBuffer = new ArrayList<>();
+        while (!inputConfirmed(input)) {
+            if (backspaceWhenInputEmpty(input, inputBuffer)) {
                 input = terminal.readCharacter();
                 continue;
             }
-            if (input == '\b') {
-                userInput.remove(userInput.size() - 1);
+            if (isBackspace(input)) {
                 terminal.clearScreen();
-                updateDisplay(score, grid);
-                printGameOverMessage();
                 terminal.printStringCentered(promptMessage);
+                inputBuffer.remove(inputBuffer.size() - 1);
                 terminal.printString(
-                        userInput.stream().map(String::valueOf).collect(Collectors.joining("")));
+                        inputBuffer.stream().map(String::valueOf).collect(Collectors.joining("")));
                 input = terminal.readCharacter();
                 continue;
             }
-            if (feedbackChar != null) {
-                terminal.printCharacter(feedbackChar);
-            } else {
-                terminal.printCharacter(input);
-            }
-            userInput.add(input);
+
+            char feedback = feedbackChar != null ? feedbackChar : input;
+            terminal.printCharacter(feedback);
+            inputBuffer.add(input);
             input = terminal.readCharacter();
         }
-        terminal.printLine("");
-        return userInput.stream().map(String::valueOf).collect(Collectors.joining(""));
+        terminal.printNewLine();
+        return inputBuffer.stream().map(String::valueOf).collect(Collectors.joining(""));
+    }
+
+    private boolean backspaceWhenInputEmpty(char input, List<Character> inputBuffer) {
+        return inputBuffer.isEmpty() && isBackspace(input);
+    }
+
+    private boolean isBackspace(char input) {
+        return input == '\b';
+    }
+
+    private boolean inputConfirmed(char input) {
+       return input != '\n';
     }
 
 }
