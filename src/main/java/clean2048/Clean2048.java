@@ -58,7 +58,7 @@ public class Clean2048 {
   }
 
   private void updateAndShowLeaderboard() throws IOException {
-    String userName = view.promptForUserName();
+    String userName = view.promptForUsername();
     String password = view.promptForPassword();
     if (userScoreStorage.verifyUser(userName, password)) {
       userScoreStorage.updateLeaderboard(userName, password, engine.getScore());

@@ -180,6 +180,18 @@ public class TerminalGameView {
     }
   }
 
+  public String promptForPassword() throws IOException {
+    UserScoreStorage scoreStorage = new UserScoreStorage();
+    LoginView loginView = new LoginView(terminal, scoreStorage.readUserData());
+    return loginView.promptForPassword();
+  }
+
+  public String promptForUsername() throws IOException {
+    UserScoreStorage scoreStorage = new UserScoreStorage();
+    LoginView loginView = new LoginView(terminal, scoreStorage.readUserData());
+    return loginView.promptForUsername();
+  }
+
   private enum EditLeaderboardAction {
     DELETE('d'),
     EDIT_USERNAME('e'),
@@ -219,17 +231,19 @@ public class TerminalGameView {
     if (loginAttempt.isPresent() && loginAttempt.get().equals(selectedUser)) {
       leaderboard.remove(selectedUser.userName, selectedUser);
       String oldUsername = selectedUser.userName;
+      String newUserName = loginView.promptForNewUserName();
       selectedUser.userName = newUserName;
       leaderboard.put(newUserName, selectedUser);
       UserScoreStorage storage = new UserScoreStorage();
       storage.writeUserData(leaderboard);
       terminal.printLineCentered(
-              "Successfully renamed the user: %s to %s".formatted(oldUsername, selectedUser.userName));
+          "Successfully renamed the user: %s to %s".formatted(oldUsername, selectedUser.userName));
     }
   }
 
   private void runDelete(User selectedUser, Map<String, User> leaderboard) throws IOException {
-    String password = promptForPassword();
+    LoginView loginView = new LoginView(terminal, leaderboard);
+    String password = loginView.promptForPassword();
     if (!Objects.equals(password, selectedUser.password)) {
       terminal.printLineCentered("Incorrect password! Please try again", Color.RED);
       runDelete(selectedUser, leaderboard);
